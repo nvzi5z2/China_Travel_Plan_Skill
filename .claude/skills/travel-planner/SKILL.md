@@ -49,6 +49,25 @@ Launch **4-6 searches simultaneously** across these dimensions:
 - Distance from hotel (🚶walking/🚕taxi + minutes)
 - Must-order dishes (🥢)
 - One-line highlight or warning
+- **Source URL** where the rating/price was found
+
+### Data Integrity Rules (Anti-Hallucination)
+
+**CRITICAL**: Every factual claim in the final guide must trace back to a search result. If search data is sparse or contradictory, flag it rather than fill gaps with training data.
+
+| Rule | Details |
+|------|---------|
+| **Source-per-claim** | Every restaurant rating, price, flight detail, ticket price, and event time must have a traceable web search result. |
+| **Cross-verify criticals** | Weather: 2+ sources (NMC + AccuWeather). Flights: FlightAware/Airportia + airline site. Events: 2+ local news/media. |
+| **Conflict = flag** | If two sources disagree on rating/price/time, present the range and note the conflict. Do NOT pick one silently. |
+| **No data = say so** | If a search doesn't return a reliable rating for a restaurant, write "评分暂缺" not a guessed number. If a flight's on-time rate isn't found, don't invent a percentage. |
+| **Date-anchor everything** | Weather forecasts, event schedules, and flight data are date-specific. A rating from 2024 is not the same as 2026. Note the year of the source. |
+| **Restaurant ratings rule** | Dianping (大众点评) scores are the primary authority for Chinese restaurants. Prefer them over Ctrip/Trip.com scores. If only Ctrip data is available, note the source platform. |
+
+**When search results are insufficient:**
+1. Tell the user: "{item}的具体信息在搜索结果中未找到可靠来源，建议出发前自行核实"
+2. Do NOT substitute with training data or "common knowledge"
+3. If the user insists, provide a suggestion clearly marked with "⚠️ 未经验证"
 
 ## Phase 3: MD Guide Generation
 
@@ -117,12 +136,22 @@ After generating both files, systematically check for gaps:
 
 ## Anti-Patterns
 
+**Content quality:**
 - ❌ Generic "秘制/祖传" restaurant recommendations on tourist main streets
 - ❌ Suggesting高铁 when direct taxi is faster and worth the cost for 2+ people
 - ❌ Packing list without women's items when partner is female
+- ❌ Missing WHY context — every recommendation needs a reason
+
+**Hallucination prevention:**
+- ❌ Making up a rating/price when search didn't return one (write "暂缺" instead)
+- ❌ Silently picking one value when two sources conflict (present the range)
+- ❌ Using training-data "common knowledge" for time-sensitive info (flight times, ticket prices, events)
+- ❌ Citing a source without actually having it in search results
+- ❌ Presenting 2024 data as current without noting the year
+
+**HTML/UX:**
 - ❌ HTML that requires scrolling through entire page (use Tabs)
 - ❌ Inline onclick on day headers (causes double-toggle bug with addEventListener)
-- ❌ Missing WHY context — every recommendation needs a reason
 
 ## Template Reference
 
