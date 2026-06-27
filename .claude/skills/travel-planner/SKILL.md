@@ -1,158 +1,331 @@
 ---
 name: travel-planner
-description: Use when the user asks to plan a trip, create a travel itinerary, make a travel guide, or mentions 旅游攻略/旅行计划/出行规划/行程安排. Triggers on requests for multi-day trip planning with food, attractions, and logistics.
+description: >-
+  为多日旅行生成定制攻略（Markdown + 移动端HTML），含实时机票/酒店/租车查询。
+  触发：旅游攻略、旅行计划、出行规划、行程安排、plan a trip、create a travel itinerary。
+  不触发：单日游、酒店/机票单独预订、签证咨询、旅行保险。
+version: 3.0.0
 ---
 
-# Travel Planner
+# 旅行规划助手（专属旅游管家）
 
-## Overview
+## 概述
 
-Multi-phase travel planning workflow: gather requirements → research → generate MD guide → build mobile HTML → audit for completeness. Acts as a personal travel concierge（专属旅游管家）, not a generic guide generator.
+6 阶段旅行规划流水线：画像建立 → 需求收集 → 双通道调研（Web + flyai）→ LLM 推理推荐 + MD 攻略 → 移动端 HTML → 管家审计。
 
-## When to Use
+核心设计：**LLM 做判断，脚本做数据。** 画像提供推理依据，flyai 提供实时选项，LLM 逐个评估并解释「为什么推荐A不推荐B」。不容忍硬编码映射。
 
-- User asks for trip planning (any duration, any destination)
-- User mentions 旅游攻略, 旅行计划, 出行规划, 行程安排
-- User wants a mobile-friendly HTML guide for their trip
+## 触发条件
 
-## Phase 1: Requirements Gathering
+- 用户请求多日旅行规划
+- 用户提到：旅游攻略、旅行计划、出行规划、行程安排、plan a trip、travel itinerary
+- 用户想要手机端 HTML 攻略
 
-Ask questions **one at a time**. Prefer multiple-choice with a "Other" option. Cover:
+**不触发**：单日游、单独订酒店/机票、签证咨询、旅行保险。
 
-1. **Departure city + transport mode** (flight/train/drive, specific flight numbers if booked)
-2. **Hotel location** (if booked, note to research nearby food later)
-3. **Travel style** (food-focused / balanced sightseeing / relaxed pace)
-4. **Budget level** (budget / mid-range / premium)
-5. **Must-do items** (specific restaurants, attractions, activities user already has in mind)
-6. **Travel companions** (solo / couple / family — affects packing list and tone)
+---
 
-**Rule**: First question asks departure city + transport together. Then one question per message. Stop when you have enough to begin research.
+## Phase 0：建立用户画像
 
-**CRITICAL**: Tell user you will search for latest online info (weather, flights, Xiaohongshu/Douyin recommendations, Dianping ratings). Do NOT rely on training data alone.
+在问行程之前，从对话中自然提取画像。画像是后续所有 LLM 推荐的**判断上下文**，不是硬编码 lookup table。
 
-## Phase 2: Research (Parallel Web Searches)
+### 画像维度
 
-Launch **4-6 searches simultaneously** across these dimensions:
+| 维度 | 问法 | LLM 如何使用 |
+|------|------|------------|
+| 出行组合 | 你和谁去？关系？年龄？ | 推理房型（大床/双床/连通）、车型（几人+行李）、活动类型 |
+| 饮食限制 | 不吃什么？忌口？过敏？ | 逐个评估餐厅：这家有辣/海鲜吗？排除还是提醒？ |
+| 体力水平 | 有老人/小孩/孕妇吗？ | 编排行程时判断：景点走多少路？要不要午休？ |
+| 旅行节奏 | 「来都来了」还是「躺着度假」？ | 决定每天 3 个还是 6 个活动 |
+| 花钱风格 | 该花就花 / 能省则省 / 只要好无所谓？ | 在等价选项中权衡：性价比还是体验？ |
+| 特殊日子 | 纪念日/生日/求婚？ | 提升氛围权重：景观 > 价格，私密 > 便利 |
+| 雷区 | 恐高？晕船？怕什么？ | 排除涉及雷区的景点和活动 |
+| 兴趣标签 | 拍照/购物/夜生活/手工艺/户外？ | 额外插入相关推荐 |
 
-| Dimension | Search For | Verification |
-|-----------|-----------|--------------|
-| Weather | `{destination} 天气预报 {dates}` | Cross-check 2+ sources (NMC, AccuWeather) |
-| Flights | User's flight numbers + airline + dates | Confirm departure time, terminal, on-time rate, baggage policy |
-| Hotel area | `{hotel name} 附近美食 周边 {city}` | Find walking-distance food streets |
-| Food trends | `{destination} 美食攻略 小红书 抖音 大众点评 {current year}` | Get trending categories + specific restaurant ratings |
-| Attractions | Key attractions + ticket prices + hours + transport | Note Monday closures |
-| Events | Local festivals/events during trip dates (e.g., 端午龙舟) | Verify dates match trip |
+### 设计原则
 
-**Restaurant data standard** — for each recommended restaurant, collect:
-- Dianping rating (⭐X.X)
-- Average cost per person (¥)
-- Distance from hotel (🚶walking/🚕taxi + minutes)
-- Must-order dishes (🥢)
-- One-line highlight or warning
-- **Source URL** where the rating/price was found
+```
+❌ 硬编码：couple → 大床房 → script 直接输出
+✅ LLM 判断：
+   给定画像 + flyai 返回的 8 家酒店 → LLM 逐个评估
+   → "这家海景大床房适合纪念日，那家便宜但双床标间不合适"
+   → 每条推荐附带基于画像的自然语言解释
+```
 
-### Data Integrity Rules (Anti-Hallucination)
+画像只描述「是谁」，不预设「推荐什么」。推荐在 Phase 3 由 LLM 推理产出。
 
-**CRITICAL**: Every factual claim in the final guide must trace back to a search result. If search data is sparse or contradictory, flag it rather than fill gaps with training data.
+### Phase 0 输出
 
-| Rule | Details |
-|------|---------|
-| **Source-per-claim** | Every restaurant rating, price, flight detail, ticket price, and event time must have a traceable web search result. |
-| **Cross-verify criticals** | Weather: 2+ sources (NMC + AccuWeather). Flights: FlightAware/Airportia + airline site. Events: 2+ local news/media. |
-| **Conflict = flag** | If two sources disagree on rating/price/time, present the range and note the conflict. Do NOT pick one silently. |
-| **No data = say so** | If a search doesn't return a reliable rating for a restaurant, write "评分暂缺" not a guessed number. If a flight's on-time rate isn't found, don't invent a percentage. |
-| **Date-anchor everything** | Weather forecasts, event schedules, and flight data are date-specific. A rating from 2024 is not the same as 2026. Note the year of the source. |
-| **Restaurant ratings rule** | Dianping (大众点评) scores are the primary authority for Chinese restaurants. Prefer them over Ctrip/Trip.com scores. If only Ctrip data is available, note the source platform. |
+```json
+{
+  "profile": {
+    "group": {"composition": "two_families", "total_adults": 4, "total_children": 2,
+              "children_ages": [5, 7], "has_elderly": true, "has_pregnant": false},
+    "dietary": {"restrictions": ["no_spicy"], "allergies": ["shellfish"]},
+    "physical": {"pace": "relaxed", "mobility_issues": ["elderly_knees"], "fears": ["boats"]},
+    "spend_style": "comfort_first",
+    "special_occasion": null,
+    "interests": ["photography", "night_market", "local_crafts"]
+  }
+}
+```
 
-**When search results are insufficient:**
-1. Tell the user: "{item}的具体信息在搜索结果中未找到可靠来源，建议出发前自行核实"
-2. Do NOT substitute with training data or "common knowledge"
-3. If the user insists, provide a suggestion clearly marked with "⚠️ 未经验证"
+---
 
-## Phase 3: MD Guide Generation
+## Phase 1：深度需求收集
 
-Generate a comprehensive Markdown file. Structure:
+基于画像，针对性收集行程参数。问什么、问到多细，由画像决定。
+
+### 模块 A：基本行程
+
+| 顺序 | 问题 | 画像关联 |
+|------|------|---------|
+| 1 | 目的地 + 日期 | — |
+| 2 | 出发城市 | 多家庭确认是否同城出发 |
+| 3 | 旅行风格确认 | 画像已有倾向，只需确认 |
+
+### 模块 B：交通定制
+
+```
+问 1：交通工具偏好？
+  [A] 飞机 ✈️  [B] 高铁 🚄  [C] 都看看，帮我比价  [D] 自驾 🚗
+
+选 A/C（含飞机）→
+  问 2：航班偏好？
+    - 直飞优先 / 中转可接受？
+    - 时段：早班便宜 / 上午舒适 / 下午 / 无所谓
+    - 舱位：经济 / 商务/头等
+    - 价格取向：最低价 / 性价比 / 舒适优先
+
+选 B/C（含高铁）→
+  问 3：高铁偏好？
+    - 座位：二等 / 一等 / 商务座
+    - 时段：早班 / 上午 / 下午 / 无所谓
+    - G字头优先 / D字头也行
+
+往返确认 →
+  问 4：去程日期+时段 / 返程日期+时段
+```
+
+### 模块 C：住宿定制
+
+```
+问 1：需要搜酒店？
+  [A] 是  [B] 已订好（跳过，只搜周边美食）
+
+选 A →
+  问 2：偏好？
+    - 区域：市中心 / 景区周边 / 交通枢纽 / 无所谓
+    - 类型：星级酒店 / 精品民宿 / 度假酒店 / 亲子酒店
+    - 每晚预算：¥200-400 / ¥400-800 / ¥800-1500 / ¥1500+
+    - 必须设施：泳池/健身房/洗衣房/儿童乐园/停车场/无
+    - 评分要求：4.5+ / 4.0+ / 无所谓
+```
+
+### 模块 D：地面交通
+
+```
+问：需要租车或接送机？
+  [A] 接送机  [B] 全程租车  [C] 都要  [D] 不用，公共交通
+```
+
+### Phase 1 输出 Schema
+
+```json
+{
+  "profile": { /* Phase 0 画像 */ },
+  "trip": {
+    "city": "三亚", "dates": {"from": "...", "to": "...", "days": 3},
+    "transport": { "mode": "flight", "flight": {...}, "train": null, "round_trip": true },
+    "hotel": {
+      "need_search": true, "area": "海棠湾", "type": "resort",
+      "budget_per_night": [800, 1500], "must_amenities": ["pool", "kids_club"]
+    },
+    "ground_transport": { "airport_transfer": true, "car_rental": true },
+    "budget_total": 12000,
+    "must_do": ["亚特兰蒂斯水族馆"]
+  }
+}
+```
+
+> room_type、rooms_needed、car_type 不在此预设。Phase 3 由 LLM 推理决定。
+
+---
+
+## Phase 2：双通道调研（Web + flyai）
+
+同时发起两类搜索。flyai 搜宽不搜窄——让 LLM 在 Phase 3 拿到全量选项后筛选。
+
+```
+Phase 2 并行任务
+├── 【Web 搜索】 天气、美食热度、景点、当地活动、骗局预警、支付通讯
+│
+├── 【交通】 flyai search-flight / search-train（按用户偏好过滤时段/舱位）
+│
+├── 【住宿 — 宽搜索】
+│   flyai search-hotel --dest {目的地} --checkin {入住} --checkout {退房}
+│       --area {区域} --type {类型} --budget {预算区间} --rating {最低评分}
+│       --amenities {设施}
+│   不加 --room-type，返回所有可用房型的酒店。
+│
+├── 【地面交通 — 宽搜索】
+│   flyai keyword-search "{目的地} 接机 {人数}" + "{目的地} 租车 自动挡"
+│   不指定车型，返回所有可用车型。
+│
+└── 【概览】 flyai keyword-search "{目的地} {月份} 旅行攻略"
+```
+
+> 反幻觉规则见 `references/anti-hallucination.md`
+> 高德链接格式见 `references/amap-api.md`
+> 城市美食参考见 `references/cuisine-db.md`
+
+---
+
+## Phase 3：LLM 推理推荐 + MD 攻略生成
+
+这是 skill 的核心。每条推荐遵循 4 步推理，附带「为什么」。
+
+### LLM 推理流程
+
+```
+Step 1: 读画像 → "这组人的特点：{摘要}"
+Step 2: 读 flyai 数据 → "飞猪返回了 N 家酒店、M 个航班、K 种车型"
+Step 3: 逐个评估 →
+  对每个候选项问：
+  - 适合画像吗？为什么适合/不适合？
+  - 不适合的能否变通？（双床房可合并？）
+  - 适合的选项中，综合得分最高的是哪个？
+    （权重由画像决定：spend_style→价格权重、special_occasion→氛围权重、
+     mobility_issues→便利性权重）
+Step 4: 输出推荐 →
+  每条必须包含：
+  - 推荐内容
+  - 为什么推荐（1-2 句，引用画像具体维度）
+  - 如果没有选最优选项，解释权衡
+```
+
+### MD 攻略结构
 
 ```markdown
-# 🏮 {Trip Title}
+# 🏮 {标题}
+> 管家寄语（语气由画像决定）
 
-> 管家寄语 (one-line personal message)
+## 🧭 你的旅行画像
+| 出行 | 饮食 | 节奏 | 预算 | 兴趣 |
+|------|------|------|------|------|
+（展示 LLM 对用户需求的理解，让用户确认）
 
-## 📋 旅行概览 (dates, flights, hotel, weather table)
-## ⚠️ 出发前确认 (flight status check, museum booking reminders)
-## 🌤️ 天气 (3-day forecast table with dressing advice)
-## 🎒 行李清单 (by person: 👫 shared / 🧑 you / 👩 partner)
+## ✈️ 交通方案（flyai 实时查询）
+| 方案 | 航班/车次 | 时间 | 价格 | 为什么推荐 |
+（每条推荐有推理）
 
-## 📅 Day 1 · {date} ({weather})
-  ### Timeline with: time | activity | detail | 💬管家说 (why) | 🗣️本地人语 (local quotes)
+## 🏨 住宿推荐（flyai 实时查询）
+| 酒店 | 房型组合 | 价格 | 为什么推荐 |
+（LLM 解释为什么这个房型适合这组人）
 
-## 📅 Day 2 · {date}
-  ...
+## 🚗 地面交通（flyai 实时查询）
+| 方案 | 车型 | 价格 | 为什么推荐 |
+（LLM 解释车型选择理由）
 
-## 🍽️ 美食推荐 (ranked by social media popularity)
-  ### 🔥 Tier 1 (super trending) — 3 restaurants per category
-  ### 🔥 Tier 2 (frequently recommended)
-  ### 🔥 Tier 3 (specialty snacks)
-
-## 💡 管家贴士 (transport table, pitfall warnings, souvenirs)
+## 📋 旅行概览
+## ⚠️ 出发前确认
+## 🌤️ 天气 + 穿衣建议
+## 🎒 行李清单（按画像分人头）
+## 📅 Day 1-3（体力曲线、黄金时刻、餐馆标注适合/不适合原因）
+## 🍽️ 美食推荐（每个餐厅标注：为什么推荐给你 / 画像匹配度）
+## 💡 管家贴士
+  - 骗局预警（目的地特定）
+  - 支付方式（微信/支付宝/现金）
+  - 通讯方案（eSIM/当地卡）
+  - 急救信息（最近医院、药店）
 ## 📞 紧急联系
 ```
 
-**Tone rules:**
-- 私人顾问语气：直接、有用、不说废话
-- Each key activity explains WHY, not just WHAT
-- Include local sayings and food culture trivia
-- Add 💑 romantic moment markers for couples
+### 语气规则
+- 私人顾问，不说废话
+- 每项推荐解释「为什么」
+- 穿插本地话和饮食文化趣事
+- 特殊日子标注 💑 浪漫时刻
+- 有老人/小孩时语气偏关怀
 
-## Phase 4: HTML Interface Generation
+---
 
-Build a self-contained, mobile-first HTML file. **Reference `template.html`** for the CSS design system and component patterns.
+## Phase 4：构建 HTML 界面
 
-**Design system (parameterized):**
-- Color: set `--color-primary` and `--color-accent` to match destination vibe
-- Layout: max-width 480px, bottom Tab bar (📅行程/🍽️美食/🎒行李/💡贴士)
-- Components: collapsible day cards, timeline with dots, rating badges, checklist items, restaurant mini-cards with map links
+### 配色自动匹配
 
-**Key interactions:**
-- Tab switching (JS, no framework)
-- Day card expand/collapse (single JS handler, NO inline onclick)
-- Checklist toggle with strikethrough
-- Restaurant names link to `https://uri.amap.com/search?keyword={name}`
-- Pure CSS/JS, zero external dependencies
+执行 `scripts/pick_theme.py`，传入城市和季节，复制输出的 `css_block` 到 HTML `:root{}`。
 
-## Phase 5: Concierge Audit
+### 组件要求
 
-After generating both files, systematically check for gaps:
+- **参考** `assets/template.html` 获取 CSS 设计系统和基础组件
+- **新增组件**：`.profile-card`（旅行画像卡片）、`.transport-card`（机票/火车票卡片）、`.hotel-card`（酒店卡片，含房型理由）、`.car-card`（租车卡片）
+- 交通和酒店卡片右下角放「去飞猪查看」按钮，链接到 flyai 返回的 `product_url`
+- 最大宽度 480px，底部 4 标签导航（📅行程/🍽️美食/🎒行李/💡贴士）
+- 纯 CSS + 原生 JS，零外部依赖，禁止行内 onclick
 
-| Check | Details |
-|-------|---------|
-| 💰 Budget estimate | Total ground cost (excl. flights/hotel) |
-| 🌧️ Rain backup | Alternative plans for outdoor activities |
-| 📸 Photo spots | Specific locations + angles, especially for female travelers |
-| 💧 Hydration | Reminder if temp > 30°C, local drink recommendations |
-| 🗣️ Local phrases | 3 survival phrases in local dialect |
-| 💑 Romantic moments | Mark sunset/view/lantern spots for couples |
-| ⏰ Time buffers | Airport/train departure deadlines + backup transport |
+### 参考资源
+- CSS 配色参数：`references/design-tokens.md`
+- 高德地图链接：`references/amap-api.md`
 
-## Anti-Patterns
+---
 
-**Content quality:**
-- ❌ Generic "秘制/祖传" restaurant recommendations on tourist main streets
-- ❌ Suggesting高铁 when direct taxi is faster and worth the cost for 2+ people
-- ❌ Packing list without women's items when partner is female
-- ❌ Missing WHY context — every recommendation needs a reason
+## Phase 5：管家审计（13 项）
 
-**Hallucination prevention:**
-- ❌ Making up a rating/price when search didn't return one (write "暂缺" instead)
-- ❌ Silently picking one value when two sources conflict (present the range)
-- ❌ Using training-data "common knowledge" for time-sensitive info (flight times, ticket prices, events)
-- ❌ Citing a source without actually having it in search results
-- ❌ Presenting 2024 data as current without noting the year
+两份文件生成后逐项检查：
 
-**HTML/UX:**
-- ❌ HTML that requires scrolling through entire page (use Tabs)
-- ❌ Inline onclick on day headers (causes double-toggle bug with addEventListener)
+| # | 审计项 | 检查内容 |
+|---|--------|---------|
+| 1 | 💰 预算 | 地面总花费是否在预算内 |
+| 2 | 🌧️ 雨天备选 | 室外活动有无室内替代 |
+| 3 | 📸 拍照点 | 兴趣含 photography 时必检 |
+| 4 | 💧 补水 | 超 30°C 标注，老人/小孩强制提醒 |
+| 5 | 🗣️ 方言 | 3 句本地话 |
+| 6 | 💑 浪漫时刻 | 特殊日子时强制标注 |
+| 7 | ⏰ 时间缓冲 | 机场/高铁截止，老人/小孩 ×1.5 缓冲 |
+| 8 | 🚫 禁忌检查 | 是否推荐了画像标记的雷区（辣/海鲜/爬山/出海） |
+| 9 | ⚡ 体力曲线 | 每日体力分布是否交错（高→低→高，非高高高） |
+| 10 | 🗺️ 地理聚类 | 同天景点是否同区，无东→西→东折返 |
+| 11 | 🍜 餐厅多样性 | 不能连续同类型（火锅→火锅❌），饮食限制时更重要 |
+| 12 | 💊 健康安全 | 最近医院、药店、高原反应提醒，老人/小孩/孕妇强制 |
+| 13 | 🧠 推荐自洽性 | LLM 推理是否引用画像？有无明显矛盾？ |
 
-## Template Reference
+---
 
-See `template.html` for the complete CSS design system and component HTML structure. When generating a new guide, copy the `<style>` block and component patterns, then fill with trip-specific content.
+## 已知坑点（Gotchas）
+
+1. **大众点评 ≠ 携程评分**：差 0.5-1 分。以大众点评为准，携程标注来源
+2. **小红书笔记 > 6 个月需标注**：2025 年热店 2026 可能已关。标注「⚠️ 信息来自 {年份}」
+3. **高德搜索需完整地址**：省+市+区+店名，缺省名→错误城市
+4. **周一闭馆**：博物馆/美术馆周一普遍闭馆
+5. **机场 ≠ 高铁站**：交通衔接要区分
+6. **flyai 数据时效**：价格和库存实时变化。生成的攻略标注「查询时间：{timestamp}」，并提示出发前重新确认
+7. **不要替用户做决定**：如果有 3 个酒店都合理，列出 Top 3 + 各自的推荐理由，让用户选。不要默默删掉选项
+8. **画像可被覆盖**：用户说「我有海鲜过敏」→ 约束生效。但用户后来说「这次破例想吃」→ 不要坚持约束，标记风险即可
+
+## 反模式
+
+完整清单见 `references/anti-hallucination.md`。高频 5 条：
+
+1. ❌ 没搜到评分时编一个 → ✅ 写「评分暂缺」
+2. ❌ 两个来源冲突时默默选一个 → ✅ 写区间，标注冲突
+3. ❌ 硬编码推荐（couple=大床房） → ✅ LLM 逐个评估+解释
+4. ❌ 女伴同行但行李无女性用品 → ✅ 按人头分包
+5. ❌ HTML 全页滚动无分栏 → ✅ 底部 Tab
+
+---
+
+## 资源索引
+
+| 路径 | 用途 | 何时加载 |
+|------|------|---------|
+| `references/anti-hallucination.md` | 数据完整性规则 + 反模式 | Phase 2 开始前 |
+| `references/cuisine-db.md` | 城市→美食映射 | Phase 2 搜索餐厅时 |
+| `references/amap-api.md` | 高德地图链接格式 | Phase 4 前 |
+| `references/design-tokens.md` | CSS 配色系统 | Phase 4 前 |
+| `assets/template.html` | CSS 设计系统 + 组件骨架 | Phase 4 前 |
+| `scripts/pick_theme.py` | 目的地自动配色（40+ 城市） | Phase 4 前 |
+| `scripts/format_weather.py` | 天气 JSON → MD 表格 | Phase 3 |
+| `scripts/validate_budget.py` | 预算一致性校验 | Phase 5 |
+| `scripts/validate_itinerary.py` | 行程时间冲突检测 | Phase 5 |
+| `scripts/parse_travel_results.py` | flyai JSON → 统一结构化数据 | Phase 3 前 |

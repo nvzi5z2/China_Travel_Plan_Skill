@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- CONTENT: <title> {Trip Title} </title> -->
+<title>Travel Guide</title>
+<style>
+/* ============================================
+   DESIGN SYSTEM — parameterize these 4 colors
+   to match the destination's visual identity:
+   --color-primary: main brand/accent color
+   --color-accent: warm secondary (ratings, highlights)
+   --color-bg: page background (warm paper tone)
+   --color-card: card background (slightly lighter)
+   ============================================ */
+:root {
+  --color-primary: #C41E3A;
+  --color-primary-light: #E8505B;
+  --color-accent: #E8A850;
+  --color-accent-light: #F5D098;
+  --color-bg: #FDF8F0;
+  --color-card: #FFFBF5;
+  --color-text: #2C1810;
+  --color-text-muted: #6B5B50;
+  --color-text-light: #8C7B6E;
+  --color-border: #E8D5C4;
+  --color-tag-bg: #FFF0E8;
+  --color-tag-text: #C46A2A;
+  --color-success: #5B8C5A;
+  --color-info-bg: #EDF5FF;
+  --color-info-border: #C5D9F0;
+  --color-info-text: #3A5A80;
+  --shadow-sm: 0 1px 3px rgba(44,24,16,0.06);
+  --shadow-md: 0 3px 12px rgba(44,24,16,0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --tab-height: 64px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: #F0E8DA;
+  color: var(--color-text);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--color-bg);
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: calc(var(--tab-height) + var(--space-sm));
+}
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 80%, black) 0%, var(--color-primary) 40%, color-mix(in srgb, var(--color-primary) 60%, black) 100%);
+  color: #FFF;
+  padding: var(--space-md) var(--space-lg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.hero-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.hero-left h1 { font-size: clamp(20px, 5vw, 24px); font-weight: 800; letter-spacing: 0.03em; line-height: 1.2; }
+.hero-left h1 span { color: var(--color-accent); }
+.hero-subtitle { font-size: 11px; opacity: 0.8; letter-spacing: 0.04em; margin-top: 1px; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 3px 10px; font-size: 10px; margin-top: 4px;
+}
+.weather-mini { display: flex; gap: 6px; flex-shrink: 0; }
+.weather-mini .wm-day { text-align: center; font-size: 10px; line-height: 1.3; opacity: 0.85; }
+.weather-mini .wm-icon { font-size: 17px; display: block; }
+
+/* ===== Tab Content ===== */
+.tab-content { display: none; padding: var(--space-md); padding-top: var(--space-sm); }
+.tab-content.active { display: block; }
+
+/* ===== Section Headers ===== */
+.section-header { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md); }
+.section-header .chop {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; background: var(--color-primary); color: #FFF;
+  font-size: 13px; font-weight: 700; border-radius: 4px; flex-shrink: 0;
+}
+.section-header h2 { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--color-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  padding: var(--space-md); margin-bottom: var(--space-md);
+}
+
+/* ===== Overview Row ===== */
+.overview-row { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
+.overview-item {
+  flex: 1; background: var(--color-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); padding: 10px; font-size: 11px; line-height: 1.5;
+}
+.overview-item .oi-icon { font-size: 16px; margin-bottom: 2px; display: block; }
+.overview-item strong { font-size: 12px; }
+
+/* ===== Day Cards (collapsible) ===== */
+.day-card {
+  background: var(--color-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md); overflow: hidden;
+}
+.day-header {
+  display: flex; align-items: center; gap: 12px; padding: var(--space-md);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.day-header:active { background: #FFF5ED; }
+.day-number {
+  flex-shrink: 0; width: 44px; height: 44px; background: var(--color-primary);
+  color: #FFF; border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; line-height: 1;
+}
+.day-number small { font-size: 9px; font-weight: 500; opacity: 0.85; }
+.day-info { flex: 1; min-width: 0; }
+.day-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.day-mood { font-size: 11px; color: var(--color-accent); font-weight: 600; margin-top: 2px; }
+.day-subtitle { font-size: 12px; color: var(--color-text-muted); }
+.day-arrow {
+  font-size: 12px; color: var(--color-text-light); transition: transform 0.25s; flex-shrink: 0;
+}
+.day-card.open .day-arrow { transform: rotate(180deg); }
+.day-body { display: none; padding: 0 var(--space-md) var(--space-md); }
+.day-card.open .day-body { display: block; }
+.card.open .day-body { display: block; }
+
+/* ===== Timeline ===== */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-primary) 0%, var(--color-border) 100%);
+}
+.tl-item { position: relative; margin-bottom: var(--space-md); }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -20px; top: 5px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--color-primary); border: 2px solid var(--color-card);
+  box-shadow: 0 0 0 2px var(--color-primary); z-index: 1;
+}
+.tl-item.star .tl-dot {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent), 0 0 8px rgba(232,168,80,0.4);
+}
+.tl-item.special .tl-dot {
+  background: #4CAF50;
+  box-shadow: 0 0 0 2px #4CAF50, 0 0 10px rgba(76,175,80,0.5);
+}
+.tl-time { font-size: 11px; color: var(--color-text-muted); font-weight: 600; margin-bottom: 2px; }
+.tl-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.tl-desc { font-size: 12px; color: var(--color-text-muted); line-height: 1.55; }
+.tl-star-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: var(--color-primary); color: #FFF;
+  font-size: 10px; font-weight: 700; padding: 1px 7px;
+  border-radius: 10px; margin-left: 4px; vertical-align: middle;
+}
+.tl-special-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: #4CAF50; color: #FFF;
+  font-size: 10px; font-weight: 700; padding: 1px 7px;
+  border-radius: 10px; margin-left: 4px; vertical-align: middle;
+}
+
+/* Butler note — "why this matters" context */
+.butler-note {
+  margin-top: 8px; background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border); border-radius: var(--radius-sm);
+  padding: 8px 10px; font-size: 11px; color: var(--color-info-text); line-height: 1.55;
+}
+.butler-note::before { content: '💬 管家说：'; font-weight: 700; display: block; margin-bottom: 2px; font-size: 11px; }
+
+/* Local quote */
+.local-quote {
+  margin-top: 6px; font-size: 11px; color: var(--color-accent); font-style: italic;
+  padding: 4px 8px; border-left: 3px solid var(--color-accent-light);
+  background: #FFFBF5; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Restaurant mini-card (inline in timeline) */
+.tl-restaurant {
+  margin-top: var(--space-sm); background: #FFF8F0;
+  border: 1px solid var(--color-accent-light); border-radius: var(--radius-sm);
+  padding: 10px 12px; font-size: 12px;
+}
+.tl-restaurant .rr-name { font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.tl-restaurant .rr-name a { color: var(--color-primary); text-decoration: none; border-bottom: 1px dashed var(--color-primary-light); }
+.tl-restaurant .rr-meta { display: flex; gap: 10px; font-size: 11px; color: var(--color-text-muted); flex-wrap: wrap; }
+.tl-restaurant .rr-order { font-size: 11px; color: var(--color-tag-text); margin-top: 4px; padding-top: 6px; border-top: 1px dotted var(--color-border); }
+
+/* Rating badge */
+.rating-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  background: var(--color-primary); color: #FFF;
+  font-size: 10px; font-weight: 700; padding: 1px 7px;
+  border-radius: 10px; white-space: nowrap;
+}
+.rating-badge.gold { background: var(--color-accent); color: #5C3A10; }
+
+/* Info / Warning notes */
+.info-note {
+  background: var(--color-info-bg); border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px;
+  margin: var(--space-sm) 0; color: var(--color-info-text);
+}
+.warn-note {
+  background: #FFF3E8; border: 1px solid var(--color-accent-light);
+  border-radius: var(--radius-sm); padding: 10px 12px; font-size: 11px; margin: var(--space-sm) 0;
+}
+
+/* ===== Food Tab ===== */
+.food-category { margin-bottom: var(--space-lg); }
+.food-cat-header { display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-sm); flex-wrap: wrap; }
+.food-cat-rank { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.03em; }
+.food-cat-rank.tier1 { background: var(--color-primary); color: #FFF; }
+.food-cat-rank.tier2 { background: var(--color-tag-bg); color: var(--color-tag-text); }
+.food-cat-rank.tier3 { background: #F0F0F0; color: #888; }
+.food-cat-title { font-size: 15px; font-weight: 700; }
+.food-knowledge {
+  font-size: 11px; color: var(--color-text-muted); line-height: 1.55;
+  margin-bottom: var(--space-sm); padding: 8px 10px;
+  background: var(--color-info-bg); border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-sm);
+}
+.food-knowledge::before { content: '📖 食知识：'; font-weight: 700; font-size: 11px; color: var(--color-info-text); }
+
+.restaurant-card {
+  background: var(--color-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: var(--space-sm);
+}
+.rc-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+.rc-rank {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary);
+  color: #FFF; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+}
+.rc-rank.gold { background: var(--color-accent); color: #5C3A10; }
+.rc-info { flex: 1; min-width: 0; }
+.rc-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rc-name a { color: var(--color-text); text-decoration: none; border-bottom: 1px dashed transparent; }
+.rc-name a:active { border-color: var(--color-primary); }
+.rc-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.rc-order { font-size: 11px; color: var(--color-tag-text); margin-top: 4px; }
+.rc-note { font-size: 11px; color: var(--color-text-muted); padding-top: 6px; margin-top: 6px; border-top: 1px dotted var(--color-border); line-height: 1.5; }
+.food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+.food-grid .restaurant-card { margin-bottom: 0; }
+.food-grid .rc-name { font-size: 13px; }
+
+/* ===== Checklist Tab ===== */
+.checklist { list-style: none; }
+.checklist li {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+  border-bottom: 1px dotted var(--color-border); font-size: 13px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.checklist li:last-child { border-bottom: none; }
+.checkbox {
+  flex-shrink: 0; width: 20px; height: 20px; border: 2px solid var(--color-border);
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; margin-top: 1px;
+}
+.checklist li.checked .checkbox { background: var(--color-success); border-color: var(--color-success); }
+.checklist li.checked .checkbox::after { content: '✓'; color: #FFF; font-size: 11px; font-weight: 700; }
+.checklist li.checked .item-text { text-decoration: line-through; color: var(--color-text-light); opacity: 0.5; }
+.item-text .reason { display: block; font-size: 11px; color: var(--color-text-light); margin-top: 1px; }
+
+/* ===== Tips Tab ===== */
+.tip-block { margin-bottom: var(--space-md); }
+.tip-block h3 { font-size: 14px; font-weight: 700; margin-bottom: var(--space-sm); display: flex; align-items: center; gap: 6px; }
+.tip-item { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px dotted var(--color-border); font-size: 13px; align-items: flex-start; line-height: 1.5; }
+.tip-item:last-child { border-bottom: none; }
+.tip-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+.transport-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.transport-table th { text-align: left; font-size: 10px; color: var(--color-text-light); padding: 6px 4px; border-bottom: 2px solid var(--color-border); }
+.transport-table td { padding: 6px 4px; border-bottom: 1px dotted var(--color-border); line-height: 1.4; }
+.transport-table td:first-child { font-weight: 600; font-size: 11px; }
+.transport-table td:last-child { color: var(--color-text-muted); text-align: right; white-space: nowrap; }
+
+.reminder-card {
+  background: #FFF8F0; border: 1px solid var(--color-accent-light);
+  border-radius: var(--radius-sm); padding: 12px; font-size: 12px;
+  line-height: 1.7; margin-top: var(--space-sm);
+}
+
+/* ===== Bottom Tab Bar ===== */
+.tab-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  max-width: 480px; width: 100%; height: var(--tab-height);
+  background: var(--color-card); border-top: 1px solid var(--color-border);
+  display: flex; z-index: 200;
+  box-shadow: 0 -2px 12px rgba(44,24,16,0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; border: none; background: none; color: var(--color-text-light);
+  font-size: 10px; font-family: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: color 0.2s; padding: 6px 0; position: relative;
+}
+.tab-btn .tb-icon { font-size: 20px; line-height: 1; }
+.tab-btn.active { color: var(--color-primary); font-weight: 600; }
+.tab-btn.active::before {
+  content: ''; position: absolute; top: 0; left: 25%; right: 25%;
+  height: 3px; background: var(--color-primary); border-radius: 0 0 3px 3px;
+}
+
+/* Page footer */
+.page-footer { text-align: center; padding: var(--space-lg); font-size: 11px; color: var(--color-text-light); opacity: 0.5; }
+
+@media (max-width: 374px) {
+  .hero { padding: var(--space-sm) var(--space-md); }
+  .tab-content { padding: var(--space-sm); }
+  .overview-row { flex-direction: column; }
+}
+::-webkit-scrollbar { width: 0; }
+
+/* ===== Profile Card ===== */
+.profile-card {
+  background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 70%, #000));
+  color: #FFF; border-radius: var(--radius-md); padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.profile-card h3 { font-size: 13px; font-weight: 600; margin: 0 0 8px 0; opacity: 0.85; }
+.profile-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.profile-tag {
+  background: rgba(255,255,255,0.18); padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+
+/* ===== Transport Card ===== */
+.transport-card {
+  background: var(--color-card); border-radius: var(--radius-md);
+  padding: var(--space-md); margin-bottom: var(--space-sm);
+  border: 1px solid var(--color-border); position: relative;
+}
+.transport-card .tc-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.transport-card .tc-type { font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; }
+.transport-card .tc-price { font-size: 18px; font-weight: 800; color: var(--color-primary); }
+.transport-card .tc-price small { font-size: 11px; font-weight: 400; color: var(--color-text-muted); }
+.transport-card .tc-route {
+  display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px;
+}
+.transport-card .tc-city { font-size: 15px; font-weight: 700; }
+.transport-card .tc-arrow { color: var(--color-accent); font-size: 14px; flex-shrink: 0; }
+.transport-card .tc-detail { font-size: 12px; color: var(--color-text-muted); }
+.transport-card .tc-why { font-size: 12px; color: var(--color-text-light); margin-top: 6px; font-style: italic; }
+.transport-card .tc-book-btn {
+  position: absolute; bottom: var(--space-md); right: var(--space-md);
+  background: var(--color-accent); color: #FFF; border: none; border-radius: 6px;
+  padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+  text-decoration: none;
+}
+
+/* ===== Hotel Card ===== */
+.hotel-card {
+  background: var(--color-card); border-radius: var(--radius-md);
+  padding: var(--space-md); margin-bottom: var(--space-sm);
+  border: 1px solid var(--color-border);
+}
+.hotel-card .hc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.hotel-card .hc-name { font-size: 15px; font-weight: 700; }
+.hotel-card .hc-stars { color: var(--color-accent); font-size: 12px; }
+.hotel-card .hc-room { font-size: 13px; font-weight: 600; color: var(--color-primary); margin-bottom: 4px; }
+.hotel-card .hc-why { font-size: 12px; color: var(--color-text-light); margin-bottom: 8px; }
+.hotel-card .hc-meta { font-size: 11px; color: var(--color-text-muted); display: flex; gap: var(--space-md); }
+.hotel-card .hc-price { font-size: 18px; font-weight: 800; color: var(--color-primary); text-align: right; }
+.hotel-card .hc-price small { font-size: 11px; font-weight: 400; color: var(--color-text-muted); }
+.hotel-card .hc-book-btn {
+  display: inline-block; background: var(--color-accent); color: #FFF;
+  border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600;
+  text-decoration: none; margin-top: 8px;
+}
+
+/* ===== Car Card ===== */
+.car-card {
+  background: var(--color-card); border-radius: var(--radius-md);
+  padding: var(--space-md); margin-bottom: var(--space-sm);
+  border: 1px solid var(--color-border);
+}
+.car-card .cc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.car-card .cc-model { font-size: 15px; font-weight: 700; }
+.car-card .cc-type { font-size: 11px; color: var(--color-accent); font-weight: 600; }
+.car-card .cc-specs { font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px; }
+.car-card .cc-why { font-size: 12px; color: var(--color-text-light); font-style: italic; }
+.car-card .cc-price { font-size: 18px; font-weight: 800; color: var(--color-primary); text-align: right; }
+.car-card .cc-book-btn {
+  display: inline-block; background: var(--color-accent); color: #FFF;
+  border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600;
+  text-decoration: none; margin-top: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- ===== HERO ===== -->
+<!-- CONTENT: Fill title, subtitle, hero-badge, weather-mini days -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <h1>DEST<span>HIGHLIGHT</span>·TRIP TITLE</h1>
+      <p class="hero-subtitle">CITY×CITY · 人数 · DATE RANGE</p>
+      <div class="hero-badge">🎯 TODAY'S HIGHLIGHT</div>
+    </div>
+    <div class="weather-mini">
+      <div class="wm-day"><span class="wm-icon">🌧️</span>DAY1<small>LABEL</small></div>
+      <div class="wm-day"><span class="wm-icon">⛅</span>DAY2</div>
+      <div class="wm-day"><span class="wm-icon">🌤️</span>DAY3</div>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== TAB: ITINERARY ==================== -->
+<!-- CONTENT: Fill flight/hotel overview, then day cards -->
+<div class="tab-content active" id="tab-itinerary">
+
+  <!-- CONTENT: Flight detail card (collapsible) with both flights -->
+  <div class="card" style="padding:0;overflow:hidden;" id="flightCard">
+    <div style="display:flex;align-items:center;padding:12px var(--space-md);cursor:pointer;user-select:none;" onclick="document.getElementById('flightCard').classList.toggle('open')">
+      <!-- CONTENT: Flight summary row -->
+      <div style="display:flex;flex:1;gap:12px;font-size:12px;line-height:1.5;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:10px;color:var(--color-text-muted);">OUTBOUND · DATE</div>
+          <div style="font-weight:700;">DEP → ARR</div>
+          <div style="font-size:11px;color:var(--color-text-light);">ROUTE</div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--color-border);font-size:18px;">·</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:10px;color:var(--color-text-muted);">RETURN · DATE</div>
+          <div style="font-weight:700;">DEP → ARR</div>
+          <div style="font-size:11px;color:var(--color-text-light);">ROUTE</div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--color-text-muted);font-size:10px;flex-shrink:0;">详情 ▸</div>
+      </div>
+    </div>
+    <div class="day-body" style="border-top:1px solid var(--color-border);background:#FFFBF5;">
+      <div style="padding:var(--space-md);">
+        <!-- CONTENT: Outbound flight detail table -->
+        <!-- CONTENT: Return flight detail table with cancellation warning if needed -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PROFILE CARD ===== -->
+  <!-- CONTENT: Fill with profile tags from Phase 0 -->
+  <div class="profile-card">
+    <h3>🧭 你的旅行画像</h3>
+    <div class="profile-tags">
+      <!-- CONTENT: <span class="profile-tag">2家庭4大2小</span> ... -->
+    </div>
+  </div>
+
+  <!-- ===== TRANSPORT CARDS ===== -->
+  <!-- CONTENT: One .transport-card per flight/train direction -->
+  <!--
+  <div class="transport-card">
+    <div class="tc-header">
+      <span class="tc-type">✈️ 去程</span>
+      <span class="tc-price">¥680<small>起</small></span>
+    </div>
+    <div class="tc-route">
+      <span class="tc-city">上海</span><span class="tc-arrow">→</span><span class="tc-city">三亚</span>
+    </div>
+    <div class="tc-detail">MU5377 · 08:30-11:20 · 浦东T1→凤凰T1 · 东航</div>
+    <div class="tc-why">💬 上午舒适时段，带老人不用太早起，到三亚刚好午饭</div>
+    <a class="tc-book-btn" href="CONTENT: product_url" target="_blank">去飞猪查看</a>
+  </div>
+  -->
+
+  <!-- ===== HOTEL CARDS ===== -->
+  <!-- CONTENT: One .hotel-card per recommended hotel -->
+  <!--
+  <div class="hotel-card">
+    <div class="hc-header">
+      <div class="hc-name">仁恒皇冠假日</div>
+      <div class="hc-stars">⭐⭐⭐⭐⭐ 4.8</div>
+    </div>
+    <div class="hc-room">🏨 家庭套房 ×2（相邻，可连通）</div>
+    <div class="hc-why">💬 2个家庭各一套房不互相干扰，儿童乐园步行2分钟，老人房在一楼近电梯</div>
+    <div class="hc-meta"><span>📍 海棠湾</span><span>🏊 泳池</span><span>🧒 儿童乐园</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span></span>
+      <span class="hc-price">¥1280<small>/晚</small></span>
+    </div>
+    <a class="hc-book-btn" href="CONTENT: product_url" target="_blank">去飞猪预订</a>
+  </div>
+  -->
+
+  <!-- ===== CAR CARD ===== -->
+  <!-- CONTENT: If car rental needed -->
+  <!--
+  <div class="car-card">
+    <div class="cc-header">
+      <div>
+        <div class="cc-model">别克 GL8</div>
+        <div class="cc-type">7座 MPV · 自动挡</div>
+      </div>
+      <div class="cc-price">¥450<small>/天</small></div>
+    </div>
+    <div class="cc-specs">🚗 神州租车 · 7座 · 自动挡</div>
+    <div class="cc-why">💬 4大2小+行李刚好，GL8第三排够大老人也能坐，侧滑门上下方便</div>
+    <a class="cc-book-btn" href="CONTENT: product_url" target="_blank">去飞猪查看</a>
+  </div>
+  -->
+
+  <!-- Hotel / highlight overview row -->
+  <div class="overview-row">
+    <div class="overview-item"><span class="oi-icon">🏨</span><strong>HOTEL</strong><br>HOTEL DETAILS</div>
+    <div class="overview-item"><span class="oi-icon">📍</span><strong>TODAY</strong><br>HIGHLIGHT</div>
+  </div>
+
+  <!-- ===== DAY 1 (open by default) ===== -->
+  <!-- CONTENT: Repeat day-card block for each day -->
+  <div class="day-card open" id="day1">
+    <div class="day-header" data-day="day1">
+      <div class="day-number">1<small>DAY</small></div>
+      <div class="day-info">
+        <div class="day-title">DATE · WEATHER</div>
+        <div class="day-mood">🎯 DAY THEME</div>
+        <div class="day-subtitle">CITY · KEY ACTIVITIES</div>
+      </div>
+      <span class="day-arrow">▼</span>
+    </div>
+    <div class="day-body"><div class="timeline">
+
+      <!-- CONTENT: Timeline items. Use classes: tl-item (normal), tl-item star (must-do), tl-item special (event/activity) -->
+
+      <!-- Standard item -->
+      <div class="tl-item"><div class="tl-dot"></div>
+        <div class="tl-time">TIME</div>
+        <div class="tl-title">🎯 ACTIVITY <span class="tl-star-badge">⭐必去</span></div>
+        <div class="tl-desc">DESCRIPTION</div>
+        <div class="butler-note">WHY this matters, what to watch for, insider context.</div>
+        <div class="local-quote">"Local saying or quote"</div>
+      </div>
+
+      <!-- Restaurant item -->
+      <div class="tl-item star"><div class="tl-dot"></div>
+        <div class="tl-time">TIME</div>
+        <div class="tl-title">🍽️ RESTAURANT NAME <span class="tl-star-badge">⭐必去</span></div>
+        <div class="tl-restaurant">
+          <div class="rr-name"><a href="https://uri.amap.com/search?keyword=RESTAURANT" target="_blank">RESTAURANT NAME</a> <span class="rating-badge">⭐RATING</span></div>
+          <div class="rr-meta"><span>💰 ¥PRICE</span><span>🚶 DISTANCE</span></div>
+          <div class="rr-order">🥢 MUST-ORDER ITEMS</div>
+        </div>
+        <div class="butler-note">WHY this restaurant, what's special, ordering tips.</div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- ===== DAY 2 (collapsed) ===== -->
+  <div class="day-card" id="day2">
+    <div class="day-header" data-day="day2">
+      <div class="day-number">2<small>DAY</small></div>
+      <div class="day-info">
+        <div class="day-title">DATE · WEATHER</div>
+        <div class="day-mood">🎯 DAY THEME</div>
+        <div class="day-subtitle">CITY · KEY ACTIVITIES</div>
+      </div>
+      <span class="day-arrow">▼</span>
+    </div>
+    <div class="day-body">
+      <!-- CONTENT: Transport note if needed, then timeline -->
+      <div class="info-note">🚕 TRANSPORT RECOMMENDATION</div>
+      <div class="timeline" style="margin-top:12px;">
+        <!-- CONTENT: Day 2 timeline items -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DAY 3 (collapsed) ===== -->
+  <div class="day-card" id="day3">
+    <div class="day-header" data-day="day3">
+      <div class="day-number">3<small>DAY</small></div>
+      <div class="day-info">
+        <div class="day-title">DATE · WEATHER</div>
+        <div class="day-mood">🎯 DAY THEME</div>
+        <div class="day-subtitle">CITY · KEY ACTIVITIES</div>
+      </div>
+      <span class="day-arrow">▼</span>
+    </div>
+    <div class="day-body">
+      <div class="warn-note">⚠️ PRE-DEPARTURE WARNING (flight check etc)</div>
+      <div class="timeline" style="margin-top:12px;">
+        <!-- CONTENT: Day 3 timeline items -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: FOOD ==================== -->
+<div class="tab-content" id="tab-food">
+  <!-- CONTENT: Food categories with restaurant cards. Pattern: -->
+
+  <!-- Tier 1 category with 3 full restaurant cards -->
+  <div class="food-category">
+    <div class="food-cat-header"><span class="food-cat-rank tier1">🔥TIER1</span><span class="food-cat-title">CATEGORY</span></div>
+    <div class="food-knowledge">CULTURAL CONTEXT about this food category.</div>
+
+    <div class="restaurant-card"><div class="rc-top"><span class="rc-rank gold">1</span><div class="rc-info">
+      <div class="rc-name"><a href="https://uri.amap.com/search?keyword=NAME" target="_blank">NAME</a> <span class="rating-badge gold">⭐RATING</span></div>
+      <div class="rc-meta"><span>💰 ¥PRICE</span><span>🚶 DISTANCE</span></div>
+      <div class="rc-order">🥢 MUST-ORDER</div>
+      <div class="rc-note">💡 HIGHLIGHT / TIP</div>
+    </div></div></div>
+
+    <!-- CONTENT: Repeat for restaurants 2, 3 -->
+  </div>
+
+  <!-- Tier 2 category with 2-column grid -->
+  <div class="food-category">
+    <div class="food-cat-header"><span class="food-cat-rank tier2">🔥TIER2</span><span class="food-cat-title">CATEGORIES</span></div>
+    <div class="food-grid">
+      <div class="restaurant-card"><div class="rc-name" style="font-size:13px;"><a href="#">NAME</a> <span class="rating-badge">⭐R</span></div>
+      <div class="rc-meta"><span>¥P</span><span>🚶D</span></div><div class="rc-order">🥢 ORDER</div></div>
+      <!-- CONTENT: Repeat for grid items -->
+    </div>
+  </div>
+
+  <!-- Tier 3 category -->
+  <div class="food-category">
+    <div class="food-cat-header"><span class="food-cat-rank tier3">🔥TIER3</span><span class="food-cat-title">SNACKS</span></div>
+    <div class="food-grid">
+      <!-- CONTENT: Snack items -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: PACKING ==================== -->
+<div class="tab-content" id="tab-packing">
+  <div class="section-header"><span class="chop">包</span><h2>行李清单</h2></div>
+  <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:4px;">点击打勾 ✔️ 收好不用再想</div>
+
+  <!-- CONTENT: Sections by person — 👫 共用 / 🧑 YOU / 👩 PARTNER -->
+  <!-- Each section: a header + card with <ul class="checklist"> -->
+  <!-- Checklist item pattern: -->
+  <!-- <li onclick="this.classList.toggle('checked')"><span class="checkbox"></span><span class="item-text"><strong>ITEM</strong><span class="reason">WHY</span></span></li> -->
+
+  <div style="font-size:12px;font-weight:700;color:var(--color-primary);margin:16px 0 8px;">👫 PERSON LABEL</div>
+  <div class="card"><ul class="checklist">
+    <li onclick="this.classList.toggle('checked')"><span class="checkbox"></span><span class="item-text"><strong>ITEM</strong><span class="reason">REASON</span></span></li>
+  </ul></div>
+</div>
+
+<!-- ==================== TAB: TIPS ==================== -->
+<div class="tab-content" id="tab-tips">
+  <!-- CONTENT: Budget estimate, transport table, local tips, survival phrases, pre-departure checklist -->
+
+  <div class="tip-block">
+    <h3>💰 花费预估</h3>
+    <div class="card" style="padding:12px;">
+      <table class="transport-table">
+        <!-- CONTENT: Budget rows -->
+        <tr><td>✈️ 往返机票</td><td>N人</td><td style="text-align:right;">（已购）</td></tr>
+        <tr><td>🚕 交通</td><td>三天合计</td><td style="text-align:right;">~¥XXX</td></tr>
+        <tr style="font-weight:700;border-top:2px solid var(--color-primary);"><td>📌 地面花费合计</td><td>不含机票酒店</td><td style="text-align:right;color:var(--color-primary);">~¥XXX</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="tip-block">
+    <h3>🚗 交通速查</h3>
+    <div class="card" style="padding:8px;">
+      <table class="transport-table">
+        <tr><th>路线</th><th>方式</th><th>耗时</th><th>费用</th></tr>
+        <!-- CONTENT: Transport rows -->
+      </table>
+    </div>
+  </div>
+
+  <div class="tip-block">
+    <h3>🗣️ 本地话速成</h3>
+    <div class="card">
+      <!-- CONTENT: 3 survival phrases -->
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dotted var(--color-border);">
+        <div style="font-size:20px;flex-shrink:0;">😋</div>
+        <div><strong>PHRASE</strong> (PRONUNCIATION)<br><span style="font-size:11px;color:var(--color-text-muted);">CONTEXT / WHEN TO USE</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reminder-card">
+    <strong>📋 出发前确认清单</strong><br>
+    <!-- CONTENT: Checklist items -->
+  </div>
+</div>
+
+<!-- ===== Bottom Tab Bar ===== -->
+<nav class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="tab-itinerary"><span class="tb-icon">📅</span>行程</button>
+  <button class="tab-btn" data-tab="tab-food"><span class="tb-icon">🍽️</span>美食</button>
+  <button class="tab-btn" data-tab="tab-packing"><span class="tb-icon">🎒</span>行李</button>
+  <button class="tab-btn" data-tab="tab-tips"><span class="tb-icon">💡</span>贴士</button>
+</nav>
+
+</div><!-- /page -->
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tabId = this.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+// Day card toggle — single JS handler. Do NOT add inline onclick on day-header.
+document.querySelectorAll('.day-header').forEach(header => {
+  header.addEventListener('click', function() {
+    this.parentElement.classList.toggle('open');
+  });
+});
+</script>
+
+</body>
+</html>
