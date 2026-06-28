@@ -5,17 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>🏮 青甘大环线 · 11日退休家庭团 V5</title>
 <style>
+.warn-banner{background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border-left:4px solid #F0A030;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:var(--space-md);font-size:10px;line-height:1.6;color:#6B4C10}
+.warn-banner strong{color:#B86A2A}
+.warn-banner .wb-title{font-size:12px;font-weight:700;color:#C47A1A;margin-bottom:4px}
 :root{--color-primary:#B86A2A;--color-primary-light:#D48A4A;--color-accent:#E8592C;--color-accent-light:#F5B898;--color-bg:#FBF5EB;--color-card:#FFFDF9;--color-text:#2C1810;--color-text-muted:#6B5B50;--color-text-light:#8C7B6E;--color-border:#E8D5C4;--color-tag-bg:#FFF0E8;--color-tag-text:#C46A2A;--color-success:#5B8C5A;--color-info-bg:#EDF5FF;--color-info-border:#C5D9F0;--color-info-text:#3A5A80;--shadow-sm:0 1px 3px rgba(44,24,16,.06);--shadow-md:0 3px 12px rgba(44,24,16,.08);--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--tab-height:64px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#F0E8DA;color:var(--color-text);line-height:1.65}
-.page{max-width:480px;margin:0 auto;background:var(--color-bg);min-height:100vh;position:relative;padding-bottom:calc(var(--tab-height)+var(--space-sm))}
+.page{max-width:480px;margin:0 auto;background:var(--color-bg);min-height:100vh;position:relative;padding-bottom:calc(var(--tab-height) + var(--space-md) + env(safe-area-inset-bottom, 0px) + 16px)}
 .hero{background:linear-gradient(160deg,#8B4513 0%,#B86A2A 40%,#6B3410 100%);color:#FFF;padding:var(--space-md) var(--space-lg);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
 .hero-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .hero-left h1{font-size:clamp(18px,5vw,22px);font-weight:800}
 .hero-left h1 span{color:#F0C040}
 .hero-subtitle{font-size:10px;opacity:.8;margin-top:2px}
 .hero-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;margin-top:4px}
-.tab-content{display:none;padding:var(--space-md)}
+.tab-content{display:none;padding:var(--space-md) var(--space-md) calc(var(--space-lg) + 16px)}
 .tab-content.active{display:block}
 .section-header{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md)}
 .section-header .chop{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--color-primary);color:#FFF;font-size:13px;font-weight:700;border-radius:4px}
@@ -127,6 +130,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans G
 
 <!-- ===== TAB: ITINERARY ===== -->
 <div class="tab-content active" id="tab-itinerary">
+
+  <div class="warn-banner">
+    <div class="wb-title">⚠️ 免责声明</div>
+    本攻略为 AI 辅助生成的旅行建议，仅供同行成员参考。实际行程可能因天气、路况、身体状况临时调整；高原自驾存在固有风险，建议购买综合旅游保险；制定者不承担组织者责任；路线变更及费用分摊由全员协商决定。<a href="#tab-tips" style="color:var(--color-primary);font-weight:600;" onclick="document.querySelector('[data-tab=tab-tips]').click()">查看全文 →</a>
+  </div>
 
   <div class="profile-card">
     <h3>🧭 旅行画像</h3>
