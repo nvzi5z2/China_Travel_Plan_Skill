@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🏮 青甘大环线 · 11日退休家庭团 V5</title>
+<style>
+:root{--color-primary:#B86A2A;--color-primary-light:#D48A4A;--color-accent:#E8592C;--color-accent-light:#F5B898;--color-bg:#FBF5EB;--color-card:#FFFDF9;--color-text:#2C1810;--color-text-muted:#6B5B50;--color-text-light:#8C7B6E;--color-border:#E8D5C4;--color-tag-bg:#FFF0E8;--color-tag-text:#C46A2A;--color-success:#5B8C5A;--color-info-bg:#EDF5FF;--color-info-border:#C5D9F0;--color-info-text:#3A5A80;--shadow-sm:0 1px 3px rgba(44,24,16,.06);--shadow-md:0 3px 12px rgba(44,24,16,.08);--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--tab-height:64px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#F0E8DA;color:var(--color-text);line-height:1.65}
+.page{max-width:480px;margin:0 auto;background:var(--color-bg);min-height:100vh;position:relative;padding-bottom:calc(var(--tab-height)+var(--space-sm))}
+.hero{background:linear-gradient(160deg,#8B4513 0%,#B86A2A 40%,#6B3410 100%);color:#FFF;padding:var(--space-md) var(--space-lg);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.hero-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hero-left h1{font-size:clamp(18px,5vw,22px);font-weight:800}
+.hero-left h1 span{color:#F0C040}
+.hero-subtitle{font-size:10px;opacity:.8;margin-top:2px}
+.hero-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;margin-top:4px}
+.tab-content{display:none;padding:var(--space-md)}
+.tab-content.active{display:block}
+.section-header{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md)}
+.section-header .chop{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--color-primary);color:#FFF;font-size:13px;font-weight:700;border-radius:4px}
+.section-header h2{font-size:16px;font-weight:700}
+.card{background:var(--color-card);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-md);margin-bottom:var(--space-md)}
+.day-card{background:var(--color-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:var(--space-md);overflow:hidden}
+.day-header{display:flex;align-items:center;gap:12px;padding:var(--space-md);cursor:pointer;user-select:none}
+.day-number{flex-shrink:0;width:44px;height:44px;background:var(--color-primary);color:#FFF;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.day-number small{font-size:9px;opacity:.85}
+.day-info{flex:1;min-width:0}
+.day-title{font-size:14px;font-weight:700}
+.day-mood{font-size:10px;color:var(--color-accent);font-weight:600;margin-top:2px}
+.day-subtitle{font-size:10px;color:var(--color-text-muted)}
+.day-arrow{font-size:12px;color:var(--color-text-light);transition:transform .25s}
+.day-card.open .day-arrow{transform:rotate(180deg)}
+.day-body{display:none;padding:0 var(--space-md) var(--space-md)}
+.day-card.open .day-body{display:block}
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:linear-gradient(to bottom,var(--color-primary),var(--color-border))}
+.tl-item{position:relative;margin-bottom:10px}
+.tl-dot{position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--color-primary);border:2px solid var(--color-card);box-shadow:0 0 0 2px var(--color-primary);z-index:1}
+.tl-item.star .tl-dot{background:var(--color-accent);box-shadow:0 0 0 2px var(--color-accent),0 0 8px rgba(232,89,44,.4)}
+.tl-item.warn .tl-dot{background:#E74C3C;box-shadow:0 0 0 2px #E74C3C}
+.tl-time{font-size:10px;color:var(--color-text-muted);font-weight:600}
+.tl-title{font-size:13px;font-weight:700;margin:2px 0}
+.tl-desc{font-size:11px;color:var(--color-text-muted);line-height:1.5}
+.tl-badge{display:inline-flex;align-items:center;background:var(--color-accent);color:#FFF;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:3px;vertical-align:middle}
+.tl-badge.green{background:var(--color-success)}
+.tl-badge.orange{background:#E67E22}
+.food-tag{margin-top:4px;background:#FFF8F0;border:1px solid var(--color-accent-light);border-radius:var(--radius-sm);padding:6px 8px;font-size:10px;line-height:1.5}
+.food-tag .fn{font-weight:700;color:var(--color-primary)}
+.food-tag .fs{font-weight:700;color:var(--color-accent)}
+.butler-note{margin-top:4px;background:var(--color-info-bg);border:1px solid var(--color-info-border);border-radius:var(--radius-sm);padding:6px 8px;font-size:10px;color:var(--color-info-text);line-height:1.5}
+.butler-note::before{content:'💬 ';font-weight:700}
+.warn-note{background:#FFF3E8;border:1px solid var(--color-accent-light);border-radius:var(--radius-sm);padding:8px 10px;font-size:10px;margin:var(--space-sm) 0}
+.info-note{background:var(--color-info-bg);border:1px solid var(--color-info-border);border-radius:var(--radius-sm);padding:8px 10px;font-size:11px;margin:var(--space-sm) 0;color:var(--color-info-text)}
+.profile-card{background:linear-gradient(135deg,#8B4513,#B86A2A);color:#FFF;border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md)}
+.profile-card h3{font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:.85}
+.profile-tags{display:flex;flex-wrap:wrap;gap:6px}
+.profile-tag{background:rgba(255,255,255,.18);padding:3px 10px;border-radius:20px;font-size:10px}
+.tcard{background:var(--color-card);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-sm);border:1px solid var(--color-border)}
+.tcard .tc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tcard .tc-t{font-size:10px;font-weight:700;color:var(--color-accent)}
+.tcard .tc-p{font-size:17px;font-weight:800;color:var(--color-primary)}
+.tcard .tc-p small{font-size:10px;font-weight:400;color:var(--color-text-muted)}
+.tcard .tc-r{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px}
+.tcard .tc-ci{font-size:14px;font-weight:700}
+.tcard .tc-ar{color:var(--color-accent);font-size:13px}
+.tcard .tc-de{font-size:11px;color:var(--color-text-muted)}
+.tcard .tc-why{font-size:11px;color:var(--color-text-light);margin-top:4px;font-style:italic}
+.tc-btn{display:inline-block;background:var(--color-accent);color:#FFF;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin-top:6px}
+.hcard{background:var(--color-card);border-radius:var(--radius-md);padding:10px var(--space-md);margin-bottom:var(--space-sm);border:1px solid var(--color-border)}
+.hcard .hc-h{display:flex;justify-content:space-between;align-items:flex-start}
+.hcard .hc-n{font-size:12px;font-weight:700}
+.hcard .hc-r{font-size:10px;color:var(--color-primary);margin-top:2px}
+.hcard .hc-p{font-size:14px;font-weight:800;color:var(--color-primary);white-space:nowrap}
+.ccard{background:var(--color-card);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-sm);border:1px solid var(--color-border)}
+.ccard .cc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ccard .cc-m{font-size:14px;font-weight:700}
+.ccard .cc-t{font-size:10px;color:var(--color-accent);font-weight:600}
+.ccard .cc-why{font-size:10px;color:var(--color-text-light);font-style:italic;margin:4px 0}
+.ccard .cc-p{font-size:16px;font-weight:800;color:var(--color-primary);text-align:right}
+.food-cat-h{display:flex;align-items:center;gap:8px;margin-bottom:var(--space-sm)}
+.food-cat-r{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.food-cat-r.t1{background:var(--color-primary);color:#FFF}
+.food-cat-r.t2{background:var(--color-tag-bg);color:var(--color-tag-text)}
+.food-cat-t{font-size:14px;font-weight:700}
+.food-info{font-size:10px;color:var(--color-text-muted);padding:6px 8px;background:var(--color-info-bg);border:1px solid var(--color-info-border);border-radius:var(--radius-sm);margin-bottom:var(--space-sm)}
+.rcard{background:var(--color-card);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:10px;margin-bottom:var(--space-sm)}
+.rcard .rc-n{font-size:13px;font-weight:700}
+.rcard .rc-m{font-size:10px;color:var(--color-text-muted);margin:2px 0}
+.rcard .rc-o{font-size:10px;color:var(--color-tag-text)}
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px dotted var(--color-border);font-size:12px;cursor:pointer}
+.checklist li:last-child{border-bottom:none}
+.cb{flex-shrink:0;width:18px;height:18px;border:2px solid var(--color-border);border-radius:4px;display:flex;align-items:center;justify-content:center}
+.checklist li.checked .cb{background:var(--color-success);border-color:var(--color-success)}
+.checklist li.checked .cb::after{content:'✓';color:#FFF;font-size:10px;font-weight:700}
+.checklist li.checked .it{text-decoration:line-through;color:var(--color-text-light);opacity:.5}
+.it .rs{display:block;font-size:10px;color:var(--color-text-light)}
+.tip-block{margin-bottom:var(--space-md)}
+.tip-block h3{font-size:13px;font-weight:700;margin-bottom:var(--space-sm)}
+.tip-i{display:flex;gap:8px;padding:7px 0;border-bottom:1px dotted var(--color-border);font-size:11px;align-items:flex-start}
+.tip-i:last-child{border-bottom:none}
+.tip-ic{flex-shrink:0;font-size:13px}
+.reminder{background:#FFF8F0;border:1px solid var(--color-accent-light);border-radius:var(--radius-sm);padding:10px;font-size:11px;line-height:1.7;margin-top:var(--space-sm)}
+.sm{font-size:10px;color:var(--color-text-light)}
+.new-badge{display:inline-block;background:var(--color-success);color:#FFF;font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.rest-badge{display:inline-block;background:#5B8C5A;color:#FFF;font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);max-width:480px;width:100%;height:var(--tab-height);background:var(--color-card);border-top:1px solid var(--color-border);display:flex;z-index:200;box-shadow:0 -2px 12px rgba(44,24,16,.06);padding-bottom:env(safe-area-inset-bottom)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--color-text-light);font-size:10px;font-family:inherit;cursor:pointer;padding:6px 0;position:relative}
+.tab-btn .ti{font-size:18px}
+.tab-btn.active{color:var(--color-primary);font-weight:600}
+.tab-btn.active::before{content:'';position:absolute;top:0;left:25%;right:25%;height:3px;background:var(--color-primary);border-radius:0 0 3px 3px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <h1>青甘<span>大环线</span></h1>
+      <p class="hero-subtitle">昆明→西宁 · 兰州→昆明 · 11人 · 7/31—8/10 · 11天 · 2×GL8</p>
+      <div class="hero-badge">🎯 退休家庭纯玩团 · ≤5h/天 · ≤3200m · 🆕V5祁连+兰州</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== TAB: ITINERARY ===== -->
+<div class="tab-content active" id="tab-itinerary">
+
+  <div class="profile-card">
+    <h3>🧭 旅行画像</h3>
+    <div class="profile-tags">
+      <span class="profile-tag">退休家庭团 11人</span><span class="profile-tag">5男6女</span><span class="profile-tag">舒适优先</span>
+      <span class="profile-tag">云南胃·吃辣无碍</span><span class="profile-tag">≤3200m</span>
+      <span class="profile-tag">🚗 2×GL8×9天</span><span class="profile-tag">6间房</span><span class="profile-tag">11天</span>
+    </div>
+  </div>
+
+  <!-- 去程 -->
+  <div class="tcard"><div class="tc-h"><span class="tc-t">✈️ 去程 7/31</span><span class="tc-p">¥599<small>/人</small></span></div>
+    <div class="tc-r"><span class="tc-ci">昆明长水</span><span class="tc-ar">→</span><span class="tc-ci">西宁曹家堡</span></div>
+    <div class="tc-de">川航 3U8209 · 06:55→09:15 · 直飞2h20min</div>
+    <div class="tc-why">💬 性价比最高直飞，上午到不耽误第一天</div>
+    <a class="tc-btn" href="https://a.feizhu.com/3how81" target="_blank">飞猪查看</a></div>
+
+  <!-- 返程（兰州→昆明 8/10 厦航） -->
+  <div class="tcard"><div class="tc-h"><span class="tc-t">✈️ 返程 8/10</span><span class="tc-p">¥900<small>/人</small></span></div>
+    <div class="tc-r"><span class="tc-ci">兰州中川</span><span class="tc-ar">→</span><span class="tc-ci">昆明长水</span></div>
+    <div class="tc-de">厦航 MF3257 · 19:00→21:15 · 直飞2h15min</div>
+    <div class="tc-why">💬 傍晚起飞，Day 11 一整个白天都能逛。厦航天合联盟成员，准点率靠谱</div>
+    <a class="tc-btn" href="https://a.feizhu.com/3Onm5f" target="_blank">飞猪查看</a></div>
+
+  <!-- 高铁 -->
+  <div class="tcard"><div class="tc-h"><span class="tc-t">🚄 西宁→兰州 8/9</span><span class="tc-p">≈¥58<small>/人</small></span></div>
+    <div class="tc-r"><span class="tc-ci">西宁站</span><span class="tc-ar">→</span><span class="tc-ci">兰州西站</span></div>
+    <div class="tc-de">G674 高铁 · 12:47→13:42 · 55min直达</div>
+    <div class="tc-why">💬 中午出发，上午西宁退房不赶。全天多趟动车可选</div>
+    <a class="tc-btn" href="https://a.feizhu.com/0lT3K1" target="_blank">飞猪查看</a></div>
+
+  <!-- 租车 -->
+  <div class="ccard"><div class="cc-h"><div><div class="cc-m">🚗 2辆别克GL8 / 奥德赛</div><div class="cc-t">7座MPV×2 · 自动挡 · 西宁取还 · 租9天</div></div><div class="cc-p">¥800-1000<small>/天</small></div></div>
+    <div class="cc-why">💬 西宁取、西宁还——无异地还车费。GL8侧滑门老人上下方便。Day 10高铁去兰州后自驾结束</div>
+    <a class="tc-btn" href="https://a.feizhu.com/3C2U6A" target="_blank">飞猪看租车</a></div>
+
+  <!-- 住宿 -->
+  <div class="section-header" style="margin-top:4px;"><span class="chop">🏨</span><h2>住宿 · 10晚·6间房</h2></div>
+  <div class="sm" style="margin-bottom:6px;">5双床+1单间 · 连锁品牌优先</div>
+  <div class="hcard"><div class="hc-h"><div class="hc-n">7/31 西宁·Holiday Inn温泉假日 🏨IHG洲际</div><span class="hc-p">¥600+</span></div><div class="hc-r">豪华型·有停车场·海拔2200m</div><a class="tc-btn" href="https://a.feizhu.com/1JZASY" style="font-size:10px;padding:3px 10px;margin-top:4px;" target="_blank">飞猪预订</a></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/1 茶卡镇·金恒基酒店</div><span class="hc-p">¥300-600</span></div><div class="hc-r">⚠️小镇无连锁·当地最佳·海拔3100m</div></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/2 大柴旦·文曦民宿</div><span class="hc-p">¥400-600</span></div><div class="hc-r">⚠️小镇无连锁·提前15天订·海拔3100m</div></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/3 冷湖镇·雅丹之星</div><span class="hc-p">¥300-500</span></div><div class="hc-r">⚠️小镇无连锁·只住一晚</div></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/4-5 敦煌·全季/亚朵（连住2晚🎯）🏨连锁</div><span class="hc-p">¥400-500</span></div><div class="hc-r">近沙洲夜市·🎉海拔1100m·Day6全天休整</div><a class="tc-btn" href="https://a.feizhu.com/2QSPdK" style="font-size:10px;padding:3px 10px;margin-top:4px;" target="_blank">飞猪预订</a></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/6 张掖·全季张掖西站 🏨连锁</div><span class="hc-p">¥400+</span></div><div class="hc-r">舒适型连锁·海拔1500m·Day7敦煌直驱张掖6h</div></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/7 祁连·宜必思尚品卓尔山 🏨Accor国际连锁 <span class="new-badge">NEW</span></div><span class="hc-p">¥500+</span></div><div class="hc-r">国际连锁·舒适型·近卓尔山</div><a class="tc-btn" href="https://a.feizhu.com/4Tp4qh" style="font-size:10px;padding:3px 10px;margin-top:4px;" target="_blank">飞猪预订</a></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/8 西宁·Holiday Inn（同一家！）🏨IHG</div><span class="hc-p">¥600+</span></div><div class="hc-r">行李不用搬·环线跑完·🚗还车</div><a class="tc-btn" href="https://a.feizhu.com/1JZASY" style="font-size:10px;padding:3px 10px;margin-top:4px;" target="_blank">飞猪预订</a></div>
+  <div class="hcard" style="margin-top:-12px;"><div class="hc-h"><div class="hc-n">8/9 兰州·亚朵（城关万达）🏨连锁 <span class="new-badge">NEW</span></div><span class="hc-p">¥400+</span></div><div class="hc-r">2024新装·高档型·近万达·连住1晚</div><a class="tc-btn" href="https://a.feizhu.com/35Mt3r" style="font-size:10px;padding:3px 10px;margin-top:4px;" target="_blank">飞猪预订</a></div>
+
+  <div class="info-note"><strong>🏔️ 海拔：</strong>西宁2200→贵德2200→青海湖3200→茶卡3100→敦煌1100🎉→张掖1500→祁连3100→兰州1500<br><strong>⏰ 开车：</strong>0h/5h/4.5h/4.5h/4h/<span style="color:var(--color-success)">0h🎯</span>/<span style="color:#E74C3C">6h⚠️</span>/3.5h/4.5h/0h/0h<br><strong>🚗</strong> 2×GL8×9天·西宁取还 · <strong>🚫</strong> 绕开拉脊山 · <strong>🆕</strong> 砍嘉峪关→加祁连+兰州</div>
+
+  <!-- DAY 1 -->
+  <div class="day-card open" id="day1"><div class="day-header" data-day="day1">
+    <div class="day-number">1<small>DAY</small></div><div class="day-info"><div class="day-title">7/31 周五 · ☀️ 西宁 22°C</div><div class="day-mood">🎯 到达·适应高原·塔尔寺</div><div class="day-subtitle">✈️ 昆明→西宁 · 海拔2200m</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">06:55→09:15</div><div class="tl-title">✈️ 昆明→西宁 <span class="tl-badge">川航¥599</span></div><div class="tl-desc">直飞2h20min→取车→Holiday Inn</div></div>
+      <div class="tl-item warn"><div class="tl-dot"></div><div class="tl-time">10:30→12:00</div><div class="tl-title">😴 休整适应</div><div class="tl-desc">2200m，不洗澡太久、不喝酒。关键看第一晚睡眠</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">12:00→13:30</div><div class="tl-title">🍜 莫家街午餐</div><div class="food-tag"><span class="fn">🥢 尕穆萨美食城</span> <span class="fs">⭐5.0</span> · ¥60 · 手抓羊肉、烤串、尕面片 · 1990年老店 / 备选：<span class="fn">伊然轩</span> ⭐4.6 · ¥94</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:00→17:00</div><div class="tl-title">🏛️ 塔尔寺</div><div class="tl-desc">门票¥70。酥油花/壁画/堆绣三绝。租讲解器¥20</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">18:00→</div><div class="tl-title">🍜 晚餐→回酒店</div><div class="food-tag"><span class="fn">🥢 德禄酸奶</span> <span class="fs">⭐4.3</span> · ¥13 · 牦牛酸奶、甜醅 · 泡温泉早休息</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 2 -->
+  <div class="day-card" id="day2"><div class="day-header" data-day="day2">
+    <div class="day-number">2<small>DAY</small></div><div class="day-info"><div class="day-title">8/1 周六 · 🌤️ 青海湖 18°C</div><div class="day-mood">🎯 贵德黄河清·青海湖·茶卡</div><div class="day-subtitle">🚐 西宁→贵德→青海湖→茶卡 · 420km·5h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">08:00</div><div class="tl-title">🚐 出发（绕行贵德）</div><div class="tl-desc">不翻拉脊山3820m，全程≤3200m ✅</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">09:30→11:00</div><div class="tl-title">🌊 贵德·黄河清大桥 <span class="tl-badge">黄河是碧绿的！</span></div><div class="tl-desc">「天下黄河贵德清」。玉皇阁¥17，明万历建。海拔仅2200m</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:30→14:00</div><div class="tl-title">🌊 青海湖</div><div class="tl-desc">中国最大内陆湖。牧民入口¥10-30/人</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:00→15:00</div><div class="tl-title">🍜 青海湖午餐</div><div class="food-tag"><span class="fn">🥢 青海湖牧场餐厅</span> · 暂无·¥35 · 牦牛酸奶、清炖羊肉 · 农家牦牛酸奶全程最好吃</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">17:00→18:30</div><div class="tl-title">🧂 茶卡盐湖 <span class="tl-badge">天空之镜</span></div><div class="tl-desc">门票¥60+小火车¥50。💡 早晚无风时湖面如镜，17:00-18:30黄金时段。穿红/白长裙</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">19:00</div><div class="tl-title">🍜 晚餐→入住茶卡</div><div class="food-tag"><span class="fn">🥢 金恒基酒店餐厅</span> · 暂无·¥40 · 牦牛肉面 / <span class="fn">茶卡镇川菜馆</span> · ¥35 · 海拔3100m不洗澡太久</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 3 -->
+  <div class="day-card" id="day3"><div class="day-header" data-day="day3">
+    <div class="day-number">3<small>DAY</small></div><div class="day-info"><div class="day-title">8/2 周日 · ☀️ 大柴旦 25°C</div><div class="day-mood">🎯 德令哈·外星人遗址·翡翠湖</div><div class="day-subtitle">🚐 茶卡→德令哈→大柴旦 · 440km·4.5h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">08:00</div><div class="tl-title">🚐 出发 · 大柴旦买氧气罐¥20-30</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:00→13:00</div><div class="tl-title">🍜 德令哈午餐</div><div class="food-tag"><span class="fn">🥢 老严烤肉城</span> <span class="fs">⭐4.3</span> · ¥40 · 牦牛肉面、烤羊肉串</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">13:00→13:40</div><div class="tl-title">👽 德令哈外星人遗址 <span class="new-badge">NEW</span></div><div class="tl-desc">白公山南麓奇异管状物——沙漠科幻地标。免费。⚠️2026年不稳定，关闭则拍照就走</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">14:40→17:00</div><div class="tl-title">💎 大柴旦翡翠湖 <span class="tl-badge">比茶卡更惊艳</span></div><div class="tl-desc">门票¥50。奶绿/翠蓝/深蓝彩色盐池。下午4-6点光线最佳</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">17:30→18:30</div><div class="tl-title">🍜 大柴旦晚餐</div><div class="food-tag"><span class="fn">🥢 伊布拉烧烤</span> <span class="fs">⭐4.5</span> · ¥55 · 炕锅羊肉 / <span class="fn">品宴民族茶餐厅</span> ⭐4.3 · ¥65 · 石锅牦牛肉</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 4 -->
+  <div class="day-card" id="day4"><div class="day-header" data-day="day4">
+    <div class="day-number">4<small>DAY</small></div><div class="day-info"><div class="day-title">8/3 周一 · ☀️ 冷湖 28°C</div><div class="day-mood">🎯 U型公路·水上雅丹</div><div class="day-subtitle">🚐 大柴旦→冷湖 · 350km·4.5h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:00</div><div class="tl-title">🚐 出发·晚半小时</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:30→10:00</div><div class="tl-title">📸 315 U型公路</div><div class="tl-desc">中国版66号公路。⚠️观景台拍，不在路中间拍！</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">11:00→13:00</div><div class="tl-title">🏞️ 水上雅丹 <span class="tl-badge">世界唯一</span></div><div class="tl-desc">门票¥60+观光车¥60</div><div class="food-tag"><span class="fn">🥢 自带干粮！</span> 景区难吃又贵 / 门口唯一清真面馆（暂无·¥35）将就</div></div>
+      <div class="tl-item warn"><div class="tl-dot"></div><div class="tl-time">14:00→17:00</div><div class="tl-title">🚐 前往冷湖</div><div class="tl-desc">⚠️见加油站就加满！冷湖→阿克塞100km无信号无油站</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">17:30</div><div class="tl-title">🍜 冷湖晚餐</div><div class="food-tag"><span class="fn">🥢 顶顶牛·干锅牦牛肉</span> <span class="fs">⭐4.5</span> · ¥55 / <span class="fn">雅丹之星餐厅</span> · ¥40</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 5 -->
+  <div class="day-card" id="day5"><div class="day-header" data-day="day5">
+    <div class="day-number">5<small>DAY</small></div><div class="day-info"><div class="day-title">8/4 周二 · ☀️ 敦煌 32°C</div><div class="day-mood">🎯 黑独山·鸣沙山日落·🎉高反消失</div><div class="day-subtitle">🚐 冷湖→敦煌 · 300km·4h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:00→10:30</div><div class="tl-title">⛰️ 黑独山</div><div class="tl-desc">摆渡车¥60。罕见黑色雅丹，天然水墨画</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:00→13:00</div><div class="tl-title">🍜 阿克塞午餐</div><div class="food-tag"><span class="fn">🥢 阿克塞哈萨克风味餐厅</span> · 暂无·¥35 · 手抓羊肉、奶茶、馕</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">16:00→16:30</div><div class="tl-title">🏨 入住敦煌 <span class="tl-badge green">🎉高反消失</span></div><div class="tl-desc">全季/亚朵。海拔1100m！check-in后直接去鸣沙山</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">16:30→19:30</div><div class="tl-title">🏜️ 鸣沙山月牙泉 <span class="tl-badge">日落必看</span></div><div class="tl-desc">门票¥110。下午4点后去！骆驼¥100、滑沙¥30。爬到山顶看日落——全程最难忘</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">20:00→</div><div class="tl-title">🌙 沙洲夜市</div><div class="food-tag"><span class="fn">靖遠尕六</span> ⭐4.7 · ¥65 / <span class="fn">七星楼烤全羊</span> ⭐4.9 · ¥80 / <span class="fn">城边边</span> ⭐4.5 · ¥55 · 喝<span class="fn">思露杏皮茶</span>¥8</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 6 — 中场休息 -->
+  <div class="day-card" id="day6"><div class="day-header" data-day="day6">
+    <div class="day-number" style="background:var(--color-success)">6<small>DAY</small></div><div class="day-info"><div class="day-title">8/5 周三 · ☀️ 敦煌 32°C <span class="rest-badge">🎯休息日</span></div><div class="day-mood">🎯 莫高窟·休整·全程唯一中场休息</div><div class="day-subtitle">🚐 不开车 · 敦煌全天</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">08:30→09:00</div><div class="tl-title">🍜 早餐</div><div class="food-tag"><span class="fn">🥢 夏家合汁</span> · ¥22 · 羊汤合汁暖胃</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">09:30→12:30</div><div class="tl-title">🏛️ 莫高窟 <span class="tl-badge">从容不赶</span></div><div class="tl-desc">A类票¥238。睡到8点，9点半到，从容逛3h。⚠️提前30天预约！</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:30→14:30</div><div class="tl-title">🍜 午餐+午休</div><div class="food-tag"><span class="fn">🥢 达记驴肉黄面</span> ⭐4.3 · ¥40 / <span class="fn">敦來順·手抓</span> ⭐5.0 · ¥70 · 回酒店午休</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">15:00→17:30</div><div class="tl-title">🛍️ 自由时间</div><div class="tl-desc">敦煌博物馆（免费）· 买文创 · 酒店休息 · 或再去鸣沙山（门票3天有效）</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">18:30→</div><div class="tl-title">🍜 晚餐</div><div class="food-tag">昨晚没吃到的今晚补：<span class="fn">七星楼烤全羊</span> ⭐4.9（提前约）/ <span class="fn">靖遠尕六</span> ⭐4.7 / <span class="fn">城边边</span> ⭐4.5</div></div>
+      <div class="butler-note">Days 2-5连续4天开车+玩，这一天是全程唯一中场休息。莫高窟不用赶早场、下午躺着也行。明天6h长途——今天休息好是关键。</div>
+    </div></div>
+  </div>
+
+  <!-- DAY 7 — 6h drive -->
+  <div class="day-card" id="day7"><div class="day-header" data-day="day7">
+    <div class="day-number">7<small>DAY</small></div><div class="day-info"><div class="day-title">8/6 周四 · ☀️ 张掖 30°C</div><div class="day-mood">⚠️ 敦煌→张掖直驱·丹霞晚霞</div><div class="day-subtitle">🚐 敦煌→张掖 · 590km·<span style="color:#E74C3C">6h⚠️</span></div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">08:00→08:30</div><div class="tl-title">🍜 早餐出发</div><div class="food-tag"><span class="fn">🥢 夏家合汁</span> 羊汤 / 酒店早餐 · 吃饱出发</div></div>
+      <div class="tl-item warn"><div class="tl-dot"></div><div class="tl-time">08:30→14:30</div><div class="tl-title">🚐 敦煌→张掖直驱 <span class="tl-badge orange">唯一超5h</span></div><div class="tl-desc">590km连霍高速·2人各开3h·酒泉服务区休息20min。戈壁→绿洲→雪山渐变</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:30→15:30</div><div class="tl-title">🍜 张掖午餐</div><div class="food-tag"><span class="fn">🥢 鹏馨羊羔肉</span> <span class="fs">⭐5.0</span> · ¥57 · 张掖羊肉第一！/ <span class="fn">甘州名吃</span> ⭐4.5 · ¥64</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">15:30→17:00</div><div class="tl-title">😴 入住+午休</div><div class="tl-desc">全季张掖西站·冲澡休息1.5h——开车的人恢复体力</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">17:00→20:00</div><div class="tl-title">🌈 七彩丹霞 <span class="tl-badge">晚霞黄金时刻</span></div><div class="tl-desc">门票¥74+观光车¥38。傍晚晚霞打在彩丘上——全天最美。4号台日落。⚠️禁止踩踏！</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">20:30→</div><div class="tl-title">🍜 晚餐</div><div class="food-tag"><span class="fn">🥢 甘州名吃</span> ⭐4.5 · ¥64 · 搓鱼子、卷子鸡、灰豆汤 / <span class="fn">董记牛肉小饭</span> ⭐4.5 · ¥8</div></div>
+      <div class="warn-note"><strong>⚠️ 全程唯一超5h驾驶日。</strong> 砍嘉峪关换祁连+兰州的代价。但Day 6刚休整过、2司机各3h+服务区+到张掖先午休1.5h再玩——设计过缓冲。</div>
+    </div></div>
+  </div>
+
+  <!-- DAY 8 — 祁连 -->
+  <div class="day-card" id="day8"><div class="day-header" data-day="day8">
+    <div class="day-number">8<small>DAY</small></div><div class="day-info"><div class="day-title">8/7 周五 · 🌤️ 祁连 18°C <span class="new-badge">NEW</span></div><div class="day-mood">🎯 祁连大草原·卓尔山·阿柔大寺</div><div class="day-subtitle">🚐 张掖→祁连 · 200km·3.5h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:00→10:30</div><div class="tl-title">🚐 张掖→峨堡镇</div><div class="tl-desc">227国道·扁都口油菜花+祁连雪山同框</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">10:30→12:00</div><div class="tl-title">🏇 祁连大草原 <span class="tl-badge">中国最美六大草原</span></div><div class="tl-desc">免费！8月草最绿。骑马¥50-100可选</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:00→13:00</div><div class="tl-title">🍜 峨堡镇午餐</div><div class="food-tag"><span class="fn">🥢 黑牦牛酸奶店</span> · ¥8-12/碗（别去网红店¥18-25！）· 配青稞饼</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">13:30→16:00</div><div class="tl-title">⛰️ 卓尔山 <span class="tl-badge">丹霞+雪山+油菜花</span></div><div class="tl-desc">门票¥60+观光车¥20。360°环视牛心山。海拔3100m——Day8已适应</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">16:30→17:30</div><div class="tl-title">🛕 阿柔大寺</div><div class="tl-desc">免费（随喜）。比塔尔寺安静十倍，经幡+草原+雪山——拍照绝佳</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">18:30→</div><div class="tl-title">🍜 祁连晚餐 <span class="tl-badge">全青海最好吃的烧烤！</span></div><div class="food-tag"><span class="fn">🥢 冶氏烤肉王</span> ⭐5.0 · ¥55 · 「全祁连最好吃」/ <span class="fn">小王烤肉城</span> ⭐5.0 · ¥55 / <span class="fn">撒拉尔美食</span> ⭐4.8 · ¥56 · 土火锅</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 9 -->
+  <div class="day-card" id="day9"><div class="day-header" data-day="day9">
+    <div class="day-number">9<small>DAY</small></div><div class="day-info"><div class="day-title">8/8 周六 · 🌤️ 西宁 22°C</div><div class="day-mood">🎯 门源油菜花·告别晚宴·还车</div><div class="day-subtitle">🚐 祁连→门源→西宁 · 280km·4.5h</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">08:00→10:00</div><div class="tl-title">🚐 祁连→门源</div><div class="tl-desc">峨祁公路，沿途祁连草原风光</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">10:00→12:00</div><div class="tl-title">🌻 门源百里油菜花 <span class="tl-badge">60万亩金黄</span></div><div class="tl-desc">门票¥30。8月上旬仍在花期</div><div class="food-tag"><span class="fn">🥢 门源回民餐厅</span> · 暂无·¥35 · 牦牛酸奶¥8 · 路边金牌酸奶必须来一碗！蜂蜜¥30-50</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">13:30→16:00</div><div class="tl-title">🚐 门源→西宁</div><div class="tl-desc">翻越达坂山。🏨 Holiday Inn老地方。🚗还车！环线跑完！</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">晚上</div><div class="tl-title">🍲 告别晚宴+🛍️</div><div class="food-tag"><span class="fn">🥢 沙力海（北大街店）</span> ⭐4.4 · ¥102 · 黄焖羊肉·包间聚餐。下南关街采购：牦牛肉干、黑枸杞、青稞酒</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 10 — 兰州 -->
+  <div class="day-card" id="day10"><div class="day-header" data-day="day10">
+    <div class="day-number">10<small>DAY</small></div><div class="day-info"><div class="day-title">8/9 周日 · ☀️ 兰州 30°C <span class="new-badge">NEW</span></div><div class="day-mood">🎯 高铁到兰州·省博·中山桥·夜市</div><div class="day-subtitle">🚄 西宁→兰州西 · 55min</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:00→11:00</div><div class="tl-title">🛍️ 西宁最后采购</div><div class="tl-desc">下南关街补特产、德禄酸奶打包带走</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">12:47→13:42</div><div class="tl-title">🚄 西宁→兰州西 <span class="tl-badge">G674高铁¥58</span></div><div class="tl-desc">55min直达。全天多趟动车可选</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:00→14:30</div><div class="tl-title">🍜 兰州西站午餐</div><div class="food-tag"><span class="fn">🥢 马安军辣子牛肉面</span> ⭐5.0 · ¥20 · 辣子牛肉面「又香又辣又麻」· 快速吃一碗</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:30→15:00</div><div class="tl-title">🏨 入住亚朵</div><div class="tl-desc">城关万达·¥400+·2024新装</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">15:00→17:00</div><div class="tl-title">🏛️ 甘肃省博物馆 <span class="tl-badge">马踏飞燕真品</span></div><div class="tl-desc">免费，提前小程序预约！丝绸之路文明展</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">17:00→18:30</div><div class="tl-title">🌉 中山桥+白塔山</div><div class="tl-desc">黄河第一桥（1907年德国建）。白塔山免费登顶，俯瞰黄河穿城</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">19:00→21:00</div><div class="tl-title">🍜 正宁路夜市</div><div class="food-tag"><span class="fn">有奴思烤肉</span> ⭐4.5 · ¥60 / <span class="fn">茹记烤肉</span> ⭐4.7 · ¥60 / 🍨 <span class="fn">再回首</span> ⭐4.8 · ¥20 · 一站式吃遍兰州小吃</div></div>
+    </div></div>
+  </div>
+
+  <!-- DAY 11 — 返程 -->
+  <div class="day-card" id="day11"><div class="day-header" data-day="day11">
+    <div class="day-number">11<small>DAY</small></div><div class="day-info"><div class="day-title">8/10 周一 · ✈️ 兰州→昆明</div><div class="day-mood">🎯 头锅牛肉面·手抓告别·飞回昆明</div><div class="day-subtitle">上午逛兰州·下午飞</div></div><span class="day-arrow">▼</span></div>
+    <div class="day-body"><div class="timeline">
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">08:00→09:00</div><div class="tl-title">🍜 早餐·头锅牛肉面</div><div class="food-tag"><span class="fn">马安军辣子牛肉面</span> ⭐5.0 · ¥20 / <span class="fn">磨沟沿牛肉面</span> ⭐4.6 · ¥20 · 传统清骨汤·本地人早餐首选</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">09:30→12:00</div><div class="tl-title">🏛️ 五泉山公园 / 水车博览园</div><div class="tl-desc">免费。山顶俯瞰市区，或看黄河边传统大水车</div></div>
+      <div class="tl-item star"><div class="tl-dot"></div><div class="tl-time">12:00→13:30</div><div class="tl-title">🍜 午餐·手抓告别</div><div class="food-tag"><span class="fn">🥢 春台手抓（总店）</span> ⭐5.0 · ¥90 · 手抓羊肉、烤包子 · 黄河边最后一顿手抓告别大西北 / <span class="fn">马老六</span> ⭐4.7 · ¥85</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">13:30→14:30</div><div class="tl-title">🛍️ 大众巷采购</div><div class="tl-desc">再回首打包酿皮、杜记甜食灰豆子+甜胚子</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">14:30</div><div class="tl-title">🚗 前往中川机场</div><div class="tl-desc">城际铁路兰州西→中川≈40min</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">17:00</div><div class="tl-title">🛫 值机</div><div class="tl-desc">提前2h到机场，厦航柜台值机</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">19:00→21:15</div><div class="tl-title">✈️ 兰州→昆明 厦航MF3257</div><div class="tl-desc">直飞2h15min · ¥900/人 · 到家！</div></div>
+    </div></div>
+  </div>
+
+</div><!-- /itinerary -->
+
+<!-- ===== TAB: FOOD ===== -->
+<div class="tab-content" id="tab-food">
+  <div class="food-cat-h"><span class="food-cat-r t1">🔥TIER1</span><span class="food-cat-t">西宁 · 近莫家街</span></div>
+  <div class="food-info">Day1/9/10用餐。</div>
+  <div class="rcard"><div class="rc-n">清真尕穆萨美食城总店 ⭐5.0</div><div class="rc-m">💰¥60 · 1990年老店</div><div class="rc-o">🥢 手抓羊肉、烤羊肉串、尕面片</div></div>
+  <div class="rcard"><div class="rc-n">清真·伊然轩青海特色美食 ⭐4.6</div><div class="rc-m">💰¥94</div><div class="rc-o">🥢 牛大骨、手抓羊肉、牛奶鸡蛋醪糟</div></div>
+  <div class="rcard"><div class="rc-n">清真·益鑫羊肉手抓馆 ⭐4.5 <span style="font-size:10px;color:var(--color-tag-text)">《舌尖》推荐</span></div><div class="rc-m">💰¥84</div><div class="rc-o">🥢 草膘羊手抓、旗花面</div></div>
+  <div class="rcard"><div class="rc-n">沙力海（北大街店）⭐4.4</div><div class="rc-m">💰¥102 · 风味榜No.1</div><div class="rc-o">🥢 黄焖羊肉、青稞饼 · 告别晚宴</div></div>
+  <div class="rcard" style="background:#FFF8F0"><div class="rc-n">🍨 德禄酸奶 ⭐4.3</div><div class="rc-m">💰¥8-13 · 莫家街</div><div class="rc-o">🥢 牦牛酸奶、甜醅 · 必吃！</div></div>
+
+  <div class="food-cat-h" style="margin-top:12px;"><span class="food-cat-r t1">🔥TIER1</span><span class="food-cat-t">敦煌 · Day5/6</span></div>
+  <div class="food-info">2晚敦煌，Day5晚餐+Day6全天。夜市19-24点。</div>
+  <div class="rcard"><div class="rc-n">清真·敦來順·手抓羊肉 ⭐5.0</div><div class="rc-m">💰¥70</div><div class="rc-o">🥢 手抓羊肉、烤羊排</div></div>
+  <div class="rcard"><div class="rc-n">七星楼果木烤全羊 ⭐4.9</div><div class="rc-m">💰¥80 · ⚠️提前2.5h预约</div><div class="rc-o">🥢 果木烤全羊</div></div>
+  <div class="rcard"><div class="rc-n">靖遠尕六美味羊羔肉 ⭐4.7 <span style="font-size:10px;color:var(--color-tag-text)">排队王</span></div><div class="rc-m">💰¥65</div><div class="rc-o">🥢 白条羊羔肉、胡羊焖饼</div></div>
+  <div class="rcard"><div class="rc-n">城边边烧烤（敦煌总店）⭐4.5</div><div class="rc-m">💰¥55</div><div class="rc-o">🥢 烤羊肉串、烤羊排</div></div>
+  <div class="rcard" style="background:#FFF8F0"><div class="rc-n">🍵 思露杏皮茶 / 莫放夏甜胚子奶茶</div><div class="rc-m">💰¥8-16</div><div class="rc-o">🥢 非遗杏皮水</div></div>
+
+  <div class="food-cat-h" style="margin-top:12px;"><span class="food-cat-r t1">🔥TIER1</span><span class="food-cat-t">张掖 · Day7/8</span></div>
+  <div class="rcard"><div class="rc-n">鹏馨羊羔肉（北关店）⭐5.0</div><div class="rc-m">💰¥57 · 张掖羊肉第一</div><div class="rc-o">🥢 手抓羊肉、烤羊排</div></div>
+  <div class="rcard"><div class="rc-n">甘州名吃 ⭐4.5</div><div class="rc-m">💰¥64 · 一站式张掖</div><div class="rc-o">🥢 搓鱼子、卷子鸡、灰豆汤</div></div>
+  <div class="rcard"><div class="rc-n">董记风味牛肉小饭 ⭐4.5</div><div class="rc-m">💰¥8 · TOP1早餐</div><div class="rc-o">🥢 牛肉汤泡碎面丁+卤肉夹馍</div></div>
+
+  <div class="food-cat-h" style="margin-top:12px;"><span class="food-cat-r t1">🔥TIER1</span><span class="food-cat-t">祁连 · Day8 <span class="new-badge">NEW</span></span></div>
+  <div class="food-info">🏆 「全青海最好吃的烧烤在祁连」——草膘羊无膻味。</div>
+  <div class="rcard"><div class="rc-n">冶氏烤肉王（老字号）⭐5.0</div><div class="rc-m">💰¥55 · 八宝镇人民路</div><div class="rc-o">🥢 烤羊排、炕锅羊排、羊肉串</div></div>
+  <div class="rcard"><div class="rc-n">小王烤肉城·老字号 ⭐5.0</div><div class="rc-m">💰¥55</div><div class="rc-o">🥢 「比西宁马一刀还好吃」</div></div>
+  <div class="rcard"><div class="rc-n">撒拉尔美食 ⭐4.8</div><div class="rc-m">💰¥56</div><div class="rc-o">🥢 土火锅、牙签羊肉</div></div>
+  <div class="rcard"><div class="rc-n">天境牦牛壮骨汤 ⭐4.5</div><div class="rc-m">💰¥37</div><div class="rc-o">🥢 牦牛壮骨汤¥20</div></div>
+  <div class="rcard" style="background:#FFF8F0"><div class="rc-n">🍨 阿丽娅酸奶坊 / 峨堡黑牦牛酸奶</div><div class="rc-m">💰¥8-12 · 别去网红店¥18-25！</div></div>
+
+  <div class="food-cat-h" style="margin-top:12px;"><span class="food-cat-r t1">🔥TIER1</span><span class="food-cat-t">兰州 · Day10/11 <span class="new-badge">NEW</span></span></div>
+  <div class="food-info">💡 牛肉面吃头锅汤（6-7点），午后很多老店就关了。</div>
+  <div class="rcard"><div class="rc-n">清真·春台手抓（总店）⭐5.0</div><div class="rc-m">💰¥90 · 黄河边</div><div class="rc-o">🥢 手抓羊肉、烤包子、夹沙肉</div></div>
+  <div class="rcard"><div class="rc-n">马安军辣子牛肉面 ⭐5.0</div><div class="rc-m">💰¥20 · 辣度可选</div><div class="rc-o">🥢 辣子牛肉面「又香又辣又麻」</div></div>
+  <div class="rcard"><div class="rc-n">再回首 ⭐4.8</div><div class="rc-m">💰¥20 · 小吃集合店</div><div class="rc-o">🥢 酿皮、灰豆子、甜胚子、醪糟</div></div>
+  <div class="rcard"><div class="rc-n">马三洋芋片 ⭐4.8</div><div class="rc-m">💰¥15</div><div class="rc-o">🥢 洋芋片、豆皮、炸年糕</div></div>
+  <div class="rcard"><div class="rc-n">茹记烤肉 ⭐4.7</div><div class="rc-m">💰¥60 · 正宁路夜市</div><div class="rc-o">🥢 称斤大串羊肉、杏皮水</div></div>
+  <div class="rcard"><div class="rc-n">马老六清真餐饮 ⭐4.7</div><div class="rc-m">💰¥85</div><div class="rc-o">🥢 手抓羊肉、爆炒牛犊肉</div></div>
+  <div class="rcard"><div class="rc-n">磨沟沿牛肉面 ⭐4.6 <span style="font-size:10px;color:var(--color-tag-text)">四大天王</span></div><div class="rc-m">💰¥20 · 8小时慢熬清骨汤</div></div>
+  <div class="rcard" style="background:#FFF8F0"><div class="rc-n">🍨 杜记甜食 ⭐4.5</div><div class="rc-m">💰¥15 · 大众巷</div><div class="rc-o">🥢 灰豆子、甜胚子、酿皮</div></div>
+</div>
+
+<!-- ===== TAB: PACKING ===== -->
+<div class="tab-content" id="tab-packing">
+  <div class="section-header"><span class="chop">包</span><h2>行李清单</h2></div><div class="sm" style="margin-bottom:6px;">点击打勾 ✔️</div>
+  <div style="font-size:11px;font-weight:700;color:var(--color-primary);margin:8px 0;">👫 共享物资</div>
+  <div class="card" style="padding:10px;"><ul class="checklist">
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>充电宝×2</strong><span class="rs">拍照导航耗电飞快</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>身份证·驾驶证</strong><span class="rs">乘飞机、租车必备</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>葡萄糖粉+红景天</strong><span class="rs">提前一周吃</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>晕车药·肠胃药·感冒药</strong></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>莫高窟+甘肃博物馆预约码截屏</strong></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>现金¥1000-2000</strong><span class="rs">牧民点只收现金</span></span></li>
+  </ul></div>
+  <div style="font-size:11px;font-weight:700;color:var(--color-primary);margin:8px 0;">🧑 男士</div>
+  <div class="card" style="padding:10px;"><ul class="checklist">
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>运动鞋</strong><span class="rs">鸣沙山用</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>薄冲锋衣</strong><span class="rs">早晚5-10°C</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>防晒冰袖+墨镜</strong></span></li>
+  </ul></div>
+  <div style="font-size:11px;font-weight:700;color:var(--color-primary);margin:8px 0;">👩 女士</div>
+  <div class="card" style="padding:10px;"><ul class="checklist">
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>红/白长裙</strong><span class="rs">盐湖+鸣沙山出片率最高</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>大丝巾/披肩</strong></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>SPF50+防晒+面膜</strong><span class="rs">西北超干</span></span></li>
+    <li onclick="this.classList.toggle('checked')"><span class="cb"></span><span class="it"><strong>宽檐帽+润唇膏</strong></span></li>
+  </ul></div>
+</div>
+
+<!-- ===== TAB: TIPS ===== -->
+<div class="tab-content" id="tab-tips">
+  <div class="tip-block"><h3>💰 费用估算（11人）</h3>
+    <div class="card" style="padding:10px;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <tr><td style="padding:3px;">✈️ 机票（去¥599+返¥900）×11</td><td style="text-align:right;">¥16,489</td></tr>
+        <tr><td style="padding:3px;">🚄 高铁西宁→兰州 ≈¥58×11</td><td style="text-align:right;">¥638</td></tr>
+        <tr><td style="padding:3px;">🚗 2×GL8租车9天·西宁取还</td><td style="text-align:right;">¥7,200-9,000</td></tr>
+        <tr><td style="padding:3px;">⛽ 油费+过路费</td><td style="text-align:right;">¥5,000-7,000</td></tr>
+        <tr><td style="padding:3px;">🏨 住宿10晚×6间</td><td style="text-align:right;">¥24,000-35,000</td></tr>
+        <tr><td style="padding:3px;">🎫 门票</td><td style="text-align:right;">¥8,000-12,000</td></tr>
+        <tr><td style="padding:3px;">🍜 餐饮11天×11人</td><td style="text-align:right;">¥14,500-20,000</td></tr>
+        <tr style="border-top:2px solid var(--color-primary);font-weight:700;"><td style="padding:3px;">📌 合计</td><td style="text-align:right;color:var(--color-primary);">¥75,000-100,000</td></tr>
+        <tr><td style="padding:3px;color:var(--color-text-light);">人均</td><td style="text-align:right;color:var(--color-text-light);">约¥6,800-9,100</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="tip-block"><h3>🏔️ 高反全程（≤3200m ✅）</h3>
+    <div class="card" style="padding:8px;font-size:11px;">西宁2200→贵德2200→青海湖3200→茶卡3100→敦煌1100🎉→张掖1500→祁连3100（Day8已适应）→兰州1500<div style="margin-top:4px;color:var(--color-success);font-weight:600;">✅ 已绕开拉脊山3820m</div></div>
+  </div>
+  <div class="tip-block"><h3>💧 高温补水</h3>
+    <div class="card" style="padding:8px;font-size:11px;">🔥 敦煌32°C·张掖30°C·兰州30°C：每人≥2L水/天。车上备一箱矿泉水。出汗多补充杏皮水、盐汽水。</div>
+  </div>
+  <div class="tip-block"><h3>🚫 避坑清单</h3>
+    <div class="card" style="padding:10px;">
+      <div class="tip-i"><span class="tip-ic">🚫</span>莫高窟提前30天预约！</div>
+      <div class="tip-i"><span class="tip-ic">🚫</span>U型公路不在路中间拍！</div>
+      <div class="tip-i"><span class="tip-ic">✅</span>见加油站就加满！</div>
+      <div class="tip-i"><span class="tip-ic">✅</span>青海湖不走二郎剑！牧民入口¥10-30</div>
+      <div class="tip-i"><span class="tip-ic">✅</span>鸣沙山下午4点后去！</div>
+      <div class="tip-i"><span class="tip-ic">✅</span>丹霞禁止踩踏！</div>
+      <div class="tip-i"><span class="tip-ic">🆕</span>兰州出租车不打表——打网约车</div>
+      <div class="tip-i"><span class="tip-ic">🆕</span>甘肃博物馆免费但必须小程序预约</div>
+      <div class="tip-i"><span class="tip-ic">🆕</span>祁连酸奶本地店¥8-12，别去网红店¥18-25</div>
+      <div class="tip-i"><span class="tip-ic">🆕</span>牛肉面吃头锅汤（6-7点），午后关门</div>
+    </div>
+  </div>
+  <div class="tip-block"><h3>🗣️ 西北方言</h3>
+    <div class="card" style="padding:10px;">
+      <div class="tip-i"><span class="tip-ic">😋</span><div><strong>青海：「阿们吃了撒？」</strong><br><span style="font-size:10px;color:var(--color-text-muted);">吃什么？</span></div></div>
+      <div class="tip-i"><span class="tip-ic">😂</span><div><strong>青海：「满福滴很！」</strong><br><span style="font-size:10px;color:var(--color-text-muted);">舒服得很！</span></div></div>
+      <div class="tip-i"><span class="tip-ic">🆕</span><div><strong>兰州：「满福」= 好吃</strong><br><span style="font-size:10px;color:var(--color-text-muted);">「尕娃」= 小伙子</span></div></div>
+    </div>
+  </div>
+  <div class="reminder">
+    <strong>📋 出发前确认清单</strong><br>
+    ☐ 莫高窟A类票预约（提前30天）<br>
+    ☐ 甘肃省博物馆预约（免费但需预约）<br>
+    ☐ 茶卡镇+大柴旦+祁连住宿<br>
+    ☐ 西宁→兰州 G674 高铁票 8/9<br>
+    ☐ 租车确认（西宁取还，2位驾驶员）<br>
+    ☐ 葡萄糖粉+红景天<br>
+    ☐ 离线地图下载<br>
+    ☐ 换现金¥1000-2000<br>
+    ☐ 7/31早上06:55昆明长水起飞——提前2小时到！
+  </div>
+
+  <div class="tip-block"><h3>⚠️ 免责声明</h3>
+    <div class="card" style="padding:10px;font-size:11px;line-height:1.7;color:var(--color-text-muted);">
+      <p style="margin-bottom:6px;">本攻略为 AI 辅助生成的旅行建议，仅供同行成员参考，不构成商业旅游服务。</p>
+      <p style="margin-bottom:4px;"><strong>1. 计划可变</strong> — 航班价格、酒店房态、景区开放时间、天气等均为查询时点的信息，出发前请重新确认。实际行程可能因天气、路况、成员身体状况等临时调整。</p>
+      <p style="margin-bottom:4px;"><strong>2. 安全自负</strong> — 高原活动、自驾长途、户外游览存在固有风险。每位成员应自行评估身体状况，必要时咨询医生。行程中的意外、伤病、财产损失由个人自行承担。</p>
+      <p style="margin-bottom:4px;"><strong>3. 非商业属性</strong> — 本攻略为朋友/家庭间无偿分享，制定者非持证导游或旅行社，不承担组织者法律责任。</p>
+      <p style="margin-bottom:4px;"><strong>4. 保险建议</strong> — 强烈建议每位成员出发前购买综合旅游保险（含高反医疗保障和自驾责任险）。</p>
+      <p><strong>5. 集体决策</strong> — 涉及路线变更、费用分摊、住宿调整等事项，由全体成员协商决定，少数服从多数。</p>
+    </div>
+  </div>
+</div>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="tab-itinerary"><span class="ti">📅</span>行程</button>
+  <button class="tab-btn" data-tab="tab-food"><span class="ti">🍽️</span>美食</button>
+  <button class="tab-btn" data-tab="tab-packing"><span class="ti">🎒</span>行李</button>
+  <button class="tab-btn" data-tab="tab-tips"><span class="ti">💡</span>贴士</button>
+</nav>
+
+</div><!-- /page -->
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(b=>{b.addEventListener('click',function(){
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+  document.getElementById(this.dataset.tab).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+})});
+document.querySelectorAll('.day-header').forEach(h=>{h.addEventListener('click',function(){this.parentElement.classList.toggle('open')})});
+</script>
+</body>
+</html>
